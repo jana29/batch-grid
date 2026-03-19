@@ -51,8 +51,8 @@ def batch_generate_from_files(
     style_path,
     output_dir,
     negative_prompt="",
-    steps=30,
-    cfg=7.0
+    steps=20,
+    cfg=8.0
 ):
     os.makedirs(output_dir, exist_ok=True)
 
@@ -116,5 +116,5 @@ if __name__ == "__main__":
         object_path="prompt/03_object.txt",
         style_path="prompt/04_style.txt",
         output_dir="output/100seeds",
-        negative_prompt="watermark, text, frame",
+        negative_prompt="watermark, text, picture frame, face card, multiple faces",
     )
