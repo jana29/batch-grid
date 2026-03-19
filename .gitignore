@@ -1,0 +1,19 @@
+# Python
+__pycache__/
+*.pyc
+
+# Outputs
+output/
+outputs/
+*.png
+*.jpg
+*.zip
+
+# Seeds / embeddings (optional)
+# If you want these reproducible, KEEP them.
+# If not, uncomment the next lines.
+# seeds/
+# embeddings/
+
+# Hugging Face cache (server-side)
+.cache/
