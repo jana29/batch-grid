@@ -91,8 +91,9 @@ print("✅ grid done")
 
 # ---- save CSV ----
 
-with open(f"{folder}/grid.csv", "w", newline="", encoding="utf-8") as f:
-
+with open("grid.csv", "w", newline="", encoding="utf-8") as f:
     writer = csv.writer(f)
-    writer.writerow(csv_rows)
+    writer.writerows(csv_rows)
+print(len(csv_rows))
+print(len(csv_rows[0]))
 print("✅ grid table saved")
