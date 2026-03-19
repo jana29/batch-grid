@@ -9,6 +9,9 @@ outputs/
 *.jpg
 *.zip
 
+# Local Config of file directories
+config_local.py
+
 # Seeds / embeddings (optional)
 # If you want these reproducible, KEEP them.
 # If not, uncomment the next lines.

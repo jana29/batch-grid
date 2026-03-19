@@ -3,7 +3,15 @@ import csv
 from PIL import Image
 from math import ceil
 
-folder = "output/40seeds"
+from config_default import *
+try:
+    from config_local import *
+    print(f"✅ loading images from locally defined OUTPUT_DIR {OUTPUT_DIR}")
+except ImportError:
+    print(f"⚠️ using default OUTPUT_DIR {OUTPUT_DIR}")
+
+folder = OUTPUT_DIR
+
 cols = 10
 
 # --- get prompt -----
@@ -90,7 +98,7 @@ for idx, fname in enumerate(files):
 
 canvas.save(f"{folder}/grid.png")
 canvas.save(f"{folder}/grid.pdf")
-print("✅ grid done")
+print(f"✅ grid png and pdf saved to {OUTPUT_DIR}")
 
 # ---- save CSV ----
 
@@ -99,4 +107,4 @@ with open(f"{folder}/grid.csv", "w", newline="", encoding="utf-8") as f:
     writer.writerows(csv_rows)
 print(len(csv_rows))
 print(len(csv_rows[0]))
-print("✅ grid table saved")
+print(f"✅ grid table saved to {OUTPUT_DIR}")

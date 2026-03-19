@@ -4,7 +4,12 @@ import torch
 from diffusers import StableDiffusionXLPipeline
 
 
-OUTPUT_PATH="output/40seeds"
+from config_default import *
+try:
+    from config_local import *
+    print(f"✅ saving to locally defined OUTPUT_DIR {OUTPUT_DIR}")
+except ImportError:
+    print(f"⚠️ using default OUTPUT_DIR {OUTPUT_DIR}")
 
 
 # --------------------------------------------------
@@ -18,7 +23,7 @@ def load_lines(path):
 
 def load_seeds(path="prompt/00_seed.txt"):
     with open(path, "r") as f:
-        return [int(line.strip()) for line in f if line.strip()][:40]
+        return [int(line.strip()) for line in f if line.strip()][:AMOUNT]
 
 
 # --------------------------------------------------
@@ -53,7 +58,7 @@ def load_pipeline():
     )
     """
     pipe = StableDiffusionXLPipeline.from_single_file(
-        "../model/sd_xl_base_1.0.safetensors",
+        MODEL_PATH,
         torch_dtype=torch.float16
     )
 
@@ -144,6 +149,8 @@ if __name__ == "__main__":
         beauty_path="prompt/02_beauty.txt",
         object_path="prompt/03_object.txt",
         style_path="prompt/04_style.txt",
-        output_dir=OUTPUT_PATH,
+        output_dir=OUTPUT_DIR,
         negative_prompt="watermark, text, picture frame, face card, multiple faces",
+        steps=GEN_STEPS,
+        guidance_scale=GEN_GUIDANCESCALE
     )
