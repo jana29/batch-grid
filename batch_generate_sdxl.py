@@ -50,18 +50,12 @@ def load_pipeline():
 from diffusers import EulerDiscreteScheduler
 
 def load_pipeline():
-    """
     pipe = StableDiffusionXLPipeline.from_pretrained(
         "stabilityai/stable-diffusion-xl-base-1.0",
         torch_dtype=torch.float16,
         use_safetensors=True,
     )
-    """
-    pipe = StableDiffusionXLPipeline.from_single_file(
-        MODEL_PATH,
-        torch_dtype=torch.float16
-    )
-
+    
     pipe.scheduler = EulerDiscreteScheduler.from_config(pipe.scheduler.config)
 
     pipe.to("cuda")
