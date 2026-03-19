@@ -94,7 +94,7 @@ print("✅ grid done")
 
 # ---- save CSV ----
 
-with open("{folder}/grid.csv", "w", newline="", encoding="utf-8") as f:
+with open(f"{folder}/grid.csv", "w", newline="", encoding="utf-8") as f:
     writer = csv.writer(f)
     writer.writerows(csv_rows)
 print(len(csv_rows))
