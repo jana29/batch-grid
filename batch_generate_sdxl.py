@@ -80,7 +80,7 @@ def batch_generate_from_files(
 
         count = 0
 
-        for i_i, obj in enumerate(intro_lines, 1):
+        for i_i, intro in enumerate(intro_lines, 1):
             for i_b, beauty in enumerate(beauty_lines, 1):
                 for i_o, obj in enumerate(object_lines, 1):
                     for i_s, style in enumerate(style_lines, 1):
