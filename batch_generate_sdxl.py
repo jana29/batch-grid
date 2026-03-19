@@ -52,9 +52,7 @@ def batch_generate_from_files(
     output_dir,
     negative_prompt="",
     steps=30,
-    cfg=7.0,
-    width=512,
-    height=744,
+    cfg=7.0
 ):
     os.makedirs(output_dir, exist_ok=True)
 
@@ -69,9 +67,11 @@ def batch_generate_from_files(
     object_lines = ["person"]
     style_lines = ["professional photography"]
 
+    seeds = load_seeds()
+    #assert len(seeds) >= 100, "Need at least 100 seeds"
 
-    total = len(beauty_lines) * len(object_lines) * len(style_lines)
-    print(f"Total combinations per seed: {total}")
+    total = len(intro_lines) *len(beauty_lines) * len(object_lines) * len(style_lines) * len(seeds)
+    print(f"Total amount of images: {total}")
 
     pipe = load_pipeline()
 
@@ -87,11 +87,9 @@ def batch_generate_from_files(
                         count += 1
 
                         prompt = f"{intro} {beauty} {obj}, {style}"
-                        print(f"[{count}/{total}] {prompt}")
+                        print(f"[{count}/{total}] {prompt}, seed: {seed}")
 
-                        generator = torch.Generator(device="cuda").manual_seed(
-                            seed + count
-                        )
+                        generator = torch.Generator(device="cuda").manual_seed(seed)
 
                         image = pipe(
                             prompt=prompt,

@@ -1,96 +1,101 @@
 import os
+import csv
 from PIL import Image
+from math import ceil
 
 folder = "output/100seeds"
-#target_seed = "230872265211790"
+cols = 10
+
+# --- get prompt -----
+def load_lines(path):
+    with open(path, "r", encoding="utf-8") as f:
+        return [line.strip() for line in f if line.strip()]
+
+def load_seeds(path="prompt/00_seed.txt"):
+    with open(path, "r") as f:
+        return [int(line.strip()) for line in f if line.strip()]
+
+"""
+intro_lines = load_lines("prompt/01_intro.txt")
+beauty_lines = load_lines("prompt/02_beauty.txt")
+object_lines = load_lines("prompt/03_object.txt")
+style_lines = load_lines("prompt/04_style.txt")
+"""
+intro_lines = ["a portrait of a"]
+beauty_lines = ["beautiful"]
+object_lines = ["person"]
+style_lines = ["professional photography"]
+
+# ------
 
 grid = {}
 
-for fname in os.listdir(folder):
+files = sorted([f for f in os.listdir(folder) if f.endswith(".png")])
 
-    if not fname.endswith(".png"):
-        continue
+rows = ceil(len(files) / cols)
 
-    parts = fname.split("_")
-
-    """
-    if len(parts) < 7:
-        continue
-
-    seed = parts[0]
-    if seed != target_seed:
-        continue
-    """
-
-    try:
-        key = tuple(int(p) for p in parts[1:7])   # i1..i5 → ROW KEY
-        col = int(parts[0])                       # i6 → COLUMN
-    except:
-        continue
-
-    grid.setdefault(key, {})
-    grid[key][col] = fname
+csv_rows = []
 
 
-# ---- SORT ROWS ----
-row_keys = sorted(grid.keys())
-
-# ---- CREATE OVERVIEW CSV ----
-import csv
-cols = 10
-
-table_csv = f"{target_seed}_grid_table.csv"
-
-with open(table_csv, "w", newline="", encoding="utf-8") as f:
-
-    writer = csv.writer(f)
-
-    for key in row_keys:
-
-        row_filenames = []
-
-        for col in range(1, cols + 1):
-
-            fname = grid[key].get(col, "")
-            row_filenames.append(fname)
-
-        writer.writerow(row_filenames)
-
-print("✅ grid table saved")
-
-
-# ---- GRID PARAMS ----
-cols = 12
+# ---- image PARAMS ----
 thumb_w = 256
 thumb_h = 372
 
 canvas = Image.new(
     "RGB",
-    (cols * thumb_w, len(row_keys) * thumb_h),
+    (cols * thumb_w, rows * thumb_h),
     "white"
 )
 
-# ---- PASTE ----
-for r_idx, key in enumerate(row_keys):
+# ---- create grid + csv ----
+for idx, fname in enumerate(files):
 
-    for col in range(1, cols + 1):
+    r = idx // cols
+    c = idx % cols
 
-        fname = grid[key].get(col)
-        if fname is None:
-            continue
+    path = os.path.join(folder, fname)
 
-        path = os.path.join(folder, fname)
+    img = Image.open(path).resize((thumb_w, thumb_h))
 
-        img = Image.open(path).resize((thumb_w, thumb_h))
+    canvas.paste(img, (c * thumb_w, r * thumb_h))
 
-        x = (col - 1) * thumb_w
-        y = r_idx * thumb_h
+    # -- get infos from filename ---
+    parts = fname.replace(".png", "").split("_")
 
-        canvas.paste(img, (x, y))
+    seed = parts[0]
+
+    try:
+        i_intro = int(parts[1]) - 1
+        i_beauty = int(parts[2]) - 1
+        i_object = int(parts[3]) - 1
+        i_style = int(parts[4]) - 1
+    except:
+        i_intro = i_beauty = i_object = i_style = 0
+
+    intro = intro_lines[i_intro]
+    beauty = beauty_lines[i_beauty]
+    obj = object_lines[i_object]
+    style = style_lines[i_style]
+    
+    prompt = f"{intro} {beauty} {obj}, {style}"
+    cell_text = f"{prompt}; seed: {seed}"
+
+    if c == 0:
+        csv_rows.append([])
+
+    csv_rows[r].append(cell_text)
 
 
-canvas.save(f"{target_seed}_grid.png")
-canvas.save(f"{target_seed}_grid.pdf")
+# ---- save grid ----
 
+canvas.save(f"{folder}/grid.png")
+canvas.save(f"{folder}/grid.pdf")
 print("✅ grid done")
-"""
+
+# ---- save CSV ----
+
+with open(f"{folder}/grid.csv", "w", newline="", encoding="utf-8") as f:
+
+    writer = csv.writer(f)
+    writer.writerow(csv_rows)
+print("✅ grid table saved")
