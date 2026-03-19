@@ -34,7 +34,7 @@ files = sorted([f for f in os.listdir(folder) if f.endswith(".png")])
 
 rows = ceil(len(files) / cols)
 
-csv_rows = []
+csv_rows = [["" for _ in range(cols)] for _ in range(rows)]
 
 
 # ---- image PARAMS ----
@@ -80,10 +80,7 @@ for idx, fname in enumerate(files):
     prompt = f"{intro} {beauty} {obj}, {style}"
     cell_text = f"{prompt}; seed: {seed}"
 
-    if c == 0:
-        csv_rows.append([])
-
-    csv_rows[r].append(cell_text)
+    csv_rows[r][c] = cell_text
 
 
 # ---- save grid ----

@@ -74,12 +74,10 @@ def batch_generate_from_files(
     print(f"Total amount of images: {total}")
 
     pipe = load_pipeline()
-
+    
+    count = 0
     for seed in seeds:
         print(f"\n🎲 Seed {seed}")
-
-        count = 0
-
         for i_i, intro in enumerate(intro_lines, 1):
             for i_b, beauty in enumerate(beauty_lines, 1):
                 for i_o, obj in enumerate(object_lines, 1):
