@@ -103,7 +103,7 @@ def batch_generate_from_files(
                             generator=generator,
                         ).images[0]
 
-                        filename = f"{seed}_{i_1}_{i_b}_{i_o}_{i_s}_0_0.png"
+                        filename = f"{seed}_{i_i}_{i_b}_{i_o}_{i_s}_0_0.png"
                         image.save(os.path.join(output_dir, filename))
 
 
