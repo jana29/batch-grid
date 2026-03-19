@@ -85,8 +85,8 @@ def batch_generate_from_files(
     style_path,
     output_dir,
     negative_prompt="",
-    steps=20,
-    cfg=7
+    steps=GEN_STEPS,
+    cfg=GEN_GUIDANCESCALE
 ):
     os.makedirs(output_dir, exist_ok=True)
 
@@ -151,6 +151,4 @@ if __name__ == "__main__":
         style_path="prompt/04_style.txt",
         output_dir=OUTPUT_DIR,
         negative_prompt="watermark, text, picture frame, face card, multiple faces",
-        steps=GEN_STEPS,
-        guidance_scale=GEN_GUIDANCESCALE
     )
