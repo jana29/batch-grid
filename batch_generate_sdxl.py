@@ -113,7 +113,7 @@ def batch_generate_from_files(
 
 if __name__ == "__main__":
     batch_generate_from_files(
-        intro_path="prompt/01_intro.txt"
+        intro_path="prompt/01_intro.txt",
         beauty_path="prompt/02_beauty.txt",
         object_path="prompt/03_object.txt",
         style_path="prompt/04_style.txt",
