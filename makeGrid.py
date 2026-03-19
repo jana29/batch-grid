@@ -3,7 +3,7 @@ import csv
 from PIL import Image
 from math import ceil
 
-folder = "output/100seeds_2"
+folder = "output/40seeds"
 cols = 10
 
 # --- get prompt -----
