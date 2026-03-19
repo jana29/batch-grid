@@ -4,6 +4,9 @@ import torch
 from diffusers import StableDiffusionXLPipeline
 
 
+OUTPUT_PATH="output/100seeds_2"
+
+
 # --------------------------------------------------
 # Utilities
 # --------------------------------------------------
@@ -115,6 +118,6 @@ if __name__ == "__main__":
         beauty_path="prompt/02_beauty.txt",
         object_path="prompt/03_object.txt",
         style_path="prompt/04_style.txt",
-        output_dir="output/100seeds",
+        output_dir=OUTPUT_PATH,
         negative_prompt="watermark, text, picture frame, face card, multiple faces",
     )
