@@ -24,7 +24,7 @@ def load_seeds(path="prompt/00_seed.txt"):
 # --------------------------------------------------
 # Load SDXL
 # --------------------------------------------------
-
+"""
 def load_pipeline():
     pipe = StableDiffusionXLPipeline.from_pretrained(
         "stabilityai/stable-diffusion-xl-base-1.0",
@@ -41,7 +41,27 @@ def load_pipeline():
         print("xFormers not available")
 
     return pipe
+"""
+from diffusers import EulerDiscreteScheduler
 
+def load_pipeline():
+    pipe = StableDiffusionXLPipeline.from_pretrained(
+        "stabilityai/stable-diffusion-xl-base-1.0",
+        torch_dtype=torch.float16,
+        use_safetensors=True,
+    )
+
+    pipe.scheduler = EulerDiscreteScheduler.from_config(pipe.scheduler.config)
+
+    pipe.to("cuda")
+
+    try:
+        pipe.enable_xformers_memory_efficient_attention()
+        print("xFormers enabled")
+    except Exception:
+        print("xFormers not available")
+
+    return pipe
 
 # --------------------------------------------------
 # Batch generation
@@ -55,7 +75,7 @@ def batch_generate_from_files(
     output_dir,
     negative_prompt="",
     steps=20,
-    cfg=8.0
+    cfg=7
 ):
     os.makedirs(output_dir, exist_ok=True)
 
@@ -90,7 +110,7 @@ def batch_generate_from_files(
                         prompt = f"{intro} {beauty} {obj}, {style}"
                         print(f"[{count}/{total}] {prompt}, seed: {seed}")
 
-                        generator = torch.Generator(device="cuda").manual_seed(seed)
+                        generator = torch.Generator("cuda").manual_seed(seed)
 
                         image = pipe(
                             prompt=prompt,
