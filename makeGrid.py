@@ -11,8 +11,7 @@ except ImportError:
     print(f"⚠️ using default OUTPUT_DIR {OUTPUT_DIR}")
 
 folder = OUTPUT_DIR
-
-cols = 10
+cols = NUM_COLS
 
 # --- get prompt -----
 def load_lines(path):
