@@ -30,7 +30,10 @@ style_lines = ["professional photography"]
 
 grid = {}
 
-files = sorted([f for f in os.listdir(folder) if f.endswith(".png")])
+files = sorted([
+    f for f in os.listdir(folder)
+    if f.endswith(".png") and f.split(".")[0].isdigit()
+])
 
 rows = ceil(len(files) / cols)
 
