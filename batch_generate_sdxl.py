@@ -4,7 +4,7 @@ import torch
 from diffusers import StableDiffusionXLPipeline
 
 
-OUTPUT_PATH="output/100seeds_2"
+OUTPUT_PATH="output/40seeds"
 
 
 # --------------------------------------------------
@@ -18,7 +18,7 @@ def load_lines(path):
 
 def load_seeds(path="prompt/00_seed.txt"):
     with open(path, "r") as f:
-        return [int(line.strip()) for line in f if line.strip()]
+        return [int(line.strip()) for line in f if line.strip()][:40]
 
 
 # --------------------------------------------------
