@@ -50,8 +50,8 @@ def generate_grid ():
 
 
     # ---- image PARAMS ----
-    thumb_w = WIDTH/2
-    thumb_h = HEIGHT/2
+    thumb_w = int(WIDTH/2)
+    thumb_h = int(HEIGHT/2)
 
     canvas = Image.new(
         "RGB",
