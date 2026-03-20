@@ -11,7 +11,7 @@ except ImportError:
     print(f"⚠️ using default OUTPUT_DIR {OUTPUT_DIR}")
 
 folder = OUTPUT_DIR
-cols = NUM_COLS
+
 
 # --- get prompt -----
 def load_lines(path):
@@ -23,7 +23,9 @@ def load_seeds(path="prompt/00_seed.txt"):
         return [int(line.strip()) for line in f if line.strip()]
 
 
-def generate_grid ():
+def generate_grid (
+    cols = NUM_COLS
+):
     """
     intro_lines = load_lines("prompt/01_intro.txt")
     beauty_lines = load_lines("prompt/02_beauty.txt")
