@@ -146,7 +146,7 @@ def batch_generate_from_files(
 def batch_generate( 
     # -- get values from config file: --
     output_dir = OUTPUT_DIR,
-    pipe,
+    pipe=pipe,
 
     seeds = [210394857610295, 592018374650918],
     
