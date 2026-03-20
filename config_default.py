@@ -19,6 +19,54 @@ WIDTH = 512
 
 AMOUNT=20
 
+COMMENT="GEN_STEPS x GUIDANCESCALE"
+
 # --- grid settings ----
 
 NUM_COLS=6
+
+
+# -----------------------------------------
+# --- run generation of images + grid ––––
+if __name__ == "__main__":
+    from batch_generate_sdxl import batch_generate_from_files
+    batch_generate_from_files()
+    """
+    batch_generate_from_files( 
+        OUTPUT_DIR,
+
+        SEEDS_PATH,
+        
+        INTRO_PATH,
+        BEAUTY_PATH,
+        OBJECT_PATH,
+        STYLE_PATH,
+
+        NEGATIVE_PROMPT,
+        GEN_STEPS,
+        GEN_GUIDANCESCALE,
+        WIDTH,
+        HEIGHT
+    )
+    batch_generate( 
+        OUTPUT_DIR,
+
+        SEEDS_PATH,
+        
+        INTRO_PATH,
+        BEAUTY_PATH,
+        OBJECT_PATH,
+        STYLE_PATH,
+
+        NEGATIVE_PROMPT,
+        GEN_STEPS,
+        GEN_GUIDANCESCALE,
+        WIDTH,
+        HEIGHT,
+
+        COMMENT
+    )
+    """
+    
+    from makeGrid import generate_grid
+    generate_grid()

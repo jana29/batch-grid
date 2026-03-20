@@ -9,10 +9,10 @@ outputs/
 *.jpg
 *.zip
 
-# Local Config of file directories
+# Local Configs
 config_local.py
 
-prompt_local/*
+local/
 
 # Seeds / embeddings (optional)
 # If you want these reproducible, KEEP them.

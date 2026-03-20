@@ -59,24 +59,24 @@ def load_pipeline():
 # Batch generation
 # --------------------------------------------------
 
-def batch_generate_from_files():
-    
+def batch_generate_from_files( 
     # -- get values from config file: --
-    output_dir = OUTPUT_DIR
+    output_dir = OUTPUT_DIR,
 
-    seeds_path = SEEDS_PATH
+    seeds_path = SEEDS_PATH,
     
-    intro_path = INTRO_PATH
-    beauty_path = BEAUTY_PATH
-    object_path = OBJECT_PATH
-    style_path = STYLE_PATH
+    intro_path = INTRO_PATH,
+    beauty_path = BEAUTY_PATH,
+    object_path = OBJECT_PATH,
+    style_path = STYLE_PATH,
 
-    negative_prompt = NEGATIVE_PROMPT
-    steps = GEN_STEPS
-    cfg = GEN_GUIDANCESCALE
-    w = WIDTH
+    negative_prompt = NEGATIVE_PROMPT,
+    steps = GEN_STEPS,
+    cfg = GEN_GUIDANCESCALE,
+    w = WIDTH,
     h = HEIGHT
     # --
+):
 
     os.makedirs(output_dir, exist_ok=True)
 
@@ -131,6 +131,7 @@ def batch_generate_from_files():
     file = os.path.join(output_dir, "settings.txt")
 
     with open(file, "w") as f:
+        f.write(f"{COMMENT}")
         f.write(f"timestamp: {datetime.now()}\n")
         f.write(f"model: {load_pipeline().pipe}\n")
         f.write(f"inference steps: {steps}\n")
@@ -138,6 +139,81 @@ def batch_generate_from_files():
         f.write(f"resolution: {w}x{h}\n")
         f.write(f"negative_prompt: {negative_prompt}\n")
         f.write(f"seed_file: {SEEDS_PATH}\n")
+        f.write("prompt_template: {intro} {beauty} {obj}, {style}", f"\n")
+
+
+# ----------- from call ---------------
+def batch_generate( 
+    # -- get values from config file: --
+    output_dir = OUTPUT_DIR,
+
+    seeds = [210394857610295, 592018374650918],
+    
+    intros = ["a portrait of a"],
+    beauties = ["beautiful"],
+    objects = ["person"],
+    styles = ["professional photography"],
+
+    negative_prompt = NEGATIVE_PROMPT,
+    steps = GEN_STEPS,
+    cfg = GEN_GUIDANCESCALE,
+    w = WIDTH,
+    h = HEIGHT,
+
+    comment = ""
+):
+
+    os.makedirs(output_dir, exist_ok=True)
+
+    total = len(intros) *len(beauties) * len(objects) * len(styles) * len(seeds)
+    print(f"Total amount of images: {total}")
+
+    pipe = load_pipeline()
+    
+    count = 0
+    for seed in seeds:
+        print(f"\n Seed {seed}")
+        for i_i, intro in enumerate(intros, 1):
+            for i_b, beauty in enumerate(beauties, 1):
+                for i_o, obj in enumerate(objects, 1):
+                    for i_s, style in enumerate(styles, 1):
+                        count += 1
+
+                        prompt = f"{intro} {beauty} {obj}, {style}"
+                        print(f"[{count}/{total}] {prompt}, seed: {seed}")
+
+                        generator = torch.Generator("cuda").manual_seed(seed)
+
+                        image = pipe(
+                            prompt=prompt,
+                            negative_prompt=negative_prompt,
+                            num_inference_steps=steps,
+                            guidance_scale=cfg,
+                            width=w,
+                            height=h,
+                            #original_size=(512, 744),
+                            #target_size=(512, 744),
+                            generator=generator,
+                        ).images[0]
+
+                        filename = f"{seed}_{i_i}_{i_b}_{i_o}_{i_s}_0_0.png"
+                        image.save(os.path.join(output_dir, filename))
+    
+    # ---- write overview txt file ------
+    file = os.path.join(output_dir, "settings.txt")
+
+    with open(file, "w") as f:
+        f.write(f"{comment}\n")
+        f.write(f"timestamp: {datetime.now()}\n")
+        f.write(f"model: {load_pipeline().pipe}\n")
+        f.write(f"inference steps: {steps}\n")
+        f.write(f"cfg / guidance scale: {cfg}\n")
+        f.write(f"resolution: {w}x{h}\n")
+        f.write(f"seeds: {seeds}\n")
+        f.write(f"beauty: {beauties}\n")
+        f.write(f"object(s): {objects}\n")
+        f.write(f"style(s): {styles}\n")
+        f.write(f"negative_prompt: {negative_prompt}\n")
         f.write("prompt_template: {intro} {beauty} {obj}, {style}", f"\n")
 
 
