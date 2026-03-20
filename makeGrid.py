@@ -71,7 +71,8 @@ def generate_grid ():
 
         canvas.paste(img, (c * thumb_w, r * thumb_h))
 
-        # -- get infos from filename ---
+
+        # -- CSV - get infos from filename ---
         parts = fname.replace(".png", "").split("_")
 
         seed = parts[0]
@@ -88,9 +89,11 @@ def generate_grid ():
         beauty = beauty_lines[i_beauty]
         obj = object_lines[i_object]
         style = style_lines[i_style]
+
+        suffix = f"{parts[7]}, {parts[8]}"
         
         prompt = f"{intro} {beauty} {obj}, {style}"
-        cell_text = f"{prompt}; seed: {seed}"
+        cell_text = f"{prompt}; seed: {seed}; suffix"
 
         csv_rows[r][c] = cell_text
 
