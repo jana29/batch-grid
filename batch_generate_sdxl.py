@@ -216,7 +216,8 @@ def batch_generate(
         f.write(f"object(s): {objects}\n")
         f.write(f"style(s): {styles}\n")
         f.write(f"negative_prompt: {negative_prompt}\n")
-        f.write("prompt_template: {intro} {beauty} {obj}, {style}", f"\n")
+        f.write("prompt_template: {intro} {beauty} {obj}, {style}")
+        f.write(f"\n")
 
 
 # --------------------------------------------------
