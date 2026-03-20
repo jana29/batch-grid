@@ -93,7 +93,7 @@ def generate_grid ():
         suffix = f"{parts[7]}, {parts[8]}"
         
         prompt = f"{intro} {beauty} {obj}, {style}"
-        cell_text = f"{prompt}; seed: {seed}; suffix"
+        cell_text = f"{prompt}; seed: {seed}; {suffix}"
 
         csv_rows[r][c] = cell_text
 
