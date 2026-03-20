@@ -160,6 +160,8 @@ def batch_generate(
     w = WIDTH,
     h = HEIGHT,
 
+    add_to_filename ="",
+
     comment = ""
 ):
 
@@ -196,7 +198,7 @@ def batch_generate(
                             generator=generator,
                         ).images[0]
 
-                        filename = f"{seed}_{i_i}_{i_b}_{i_o}_{i_s}_0_0.png"
+                        filename = f"{seed}_{i_i}_{i_b}_{i_o}_{i_s}_0_0{add_to_filename}.png"
                         image.save(os.path.join(output_dir, filename))
     
     # ---- write overview txt file ------
