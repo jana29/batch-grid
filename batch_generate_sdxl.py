@@ -182,7 +182,7 @@ def batch_generate(
                         count += 1
 
                         prompt = f"{intro} {beauty} {obj}, {style}"
-                        print(f"[{count}/{total}] {prompt}, seed: {seed}")
+                        print(f"[{count}/{total}] {prompt}, seed: {seed}, {add_to_filename}")
 
                         generator = torch.Generator("cuda").manual_seed(seed)
 
@@ -207,7 +207,7 @@ def batch_generate(
     with open(file, "w") as f:
         f.write(f"{comment}\n")
         f.write(f"timestamp: {datetime.now()}\n")
-        f.write(f"model: {load_pipeline().pipe}\n")
+        #f.write(f"model: {load_pipeline().pipe}\n")
         f.write(f"inference steps: {steps}\n")
         f.write(f"cfg / guidance scale: {cfg}\n")
         f.write(f"resolution: {w}x{h}\n")
