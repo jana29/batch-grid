@@ -146,6 +146,7 @@ def batch_generate_from_files(
 def batch_generate( 
     # -- get values from config file: --
     output_dir = OUTPUT_DIR,
+    pipe,
 
     seeds = [210394857610295, 592018374650918],
     
@@ -169,8 +170,6 @@ def batch_generate(
 
     total = len(intros) *len(beauties) * len(objects) * len(styles) * len(seeds)
     print(f"Total amount of images: {total}")
-
-    pipe = load_pipeline()
     
     count = 0
     for seed in seeds:
