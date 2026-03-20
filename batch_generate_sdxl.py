@@ -133,7 +133,7 @@ def batch_generate_from_files(
     with open(file, "w") as f:
         f.write(f"{COMMENT}")
         f.write(f"timestamp: {datetime.now()}\n")
-        f.write(f"model: {load_pipeline().pipe}\n")
+        f.write(f"model: stabilityai/stable-diffusion-xl-base-1.0\n")
         f.write(f"inference steps: {steps}\n")
         f.write(f"cfg / guidance scale: {cfg}\n")
         f.write(f"resolution: {w}x{h}\n")
@@ -146,7 +146,7 @@ def batch_generate_from_files(
 def batch_generate( 
     # -- get values from config file: --
     output_dir = OUTPUT_DIR,
-    pipe=pipe,
+    pipe=None,
 
     seeds = [210394857610295, 592018374650918],
     
@@ -165,6 +165,8 @@ def batch_generate(
 
     comment = ""
 ):
+    if pipe is None:
+        pipe = load_pipeline()
 
     os.makedirs(output_dir, exist_ok=True)
 
@@ -206,7 +208,7 @@ def batch_generate(
     with open(file, "w") as f:
         f.write(f"{comment}\n")
         f.write(f"timestamp: {datetime.now()}\n")
-        #f.write(f"model: {load_pipeline().pipe}\n")
+        f.write(f"model: stabilityai/stable-diffusion-xl-base-1.0\n")
         f.write(f"inference steps: {steps}\n")
         f.write(f"cfg / guidance scale: {cfg}\n")
         f.write(f"resolution: {w}x{h}\n")
