@@ -4,11 +4,11 @@ from PIL import Image
 from math import ceil
 
 from config_default import *
-try:
+"""try:
     from config_local import *
     print(f"✅ loading images from locally defined OUTPUT_DIR {OUTPUT_DIR}")
 except ImportError:
-    print(f"⚠️ using default OUTPUT_DIR {OUTPUT_DIR}")
+    print(f"⚠️ using default OUTPUT_DIR {OUTPUT_DIR}")"""
 
 folder = OUTPUT_DIR
 
@@ -45,6 +45,9 @@ def generate_grid (
         f for f in os.listdir(folder)
         if f.endswith(".png") and f.split("_")[0].isdigit()
     ])
+    
+
+    print(f"cols: {cols}")
 
     rows = ceil(len(files) / cols)
 
@@ -76,7 +79,6 @@ def generate_grid (
 
         # -- CSV - get infos from filename ---
         parts = fname.replace(".png", "").split("_")
-
         seed = parts[0]
 
         try:

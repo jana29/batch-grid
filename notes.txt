@@ -1,0 +1,432 @@
+generation process
+––––––––––––––––––
+
+diffusion generation simplified, according to chatGPT:
+
+text → tokenizer → text encoder → prompt embeddings
+                                    ↓
+                        diffusion sampling loop
+                        (steps, cfg, scheduler, seed…)
+
+embeddings = conditioning signal
+steps / cfg = sampling process controls
+-> They act at different stages.
+
+
+prompt
+––––––
+
+EMBEDDINGS:
+= conditioning signal
+
+Embeddings encode:
+- semantic meaning
+- style direction
+- attribute strength
+- relationships between tokens
+
+Example:
+    embedding("beautiful person") - embedding("ugly person")
+→ “beauty direction” in latent space.
+
+
+sampling process controls
+–––––––––––––––––––––––––
+
+STEPS:
+control how long diffusion refines the latent
+
+More steps ->
+-> more detail
+-> less noise
+-> diminishing returns
+
+
+
+CFG:
+controls strength of conditioning during denoising
+
+High CFG:
+-> pulls latent strongly toward embedding direction
+-> can overshoot / distort
+Low CFG:
+-> allows model prior to dominate
+
+
+
+========================================================
+TEXT → EMBEDDING PIPELINE MANIPULATION OPTIONS (SD / SDXL)
+========================================================
+
+text
+ → tokenization
+ → token embeddings
+ → transformer text encoder
+ → final prompt embeddings
+ → diffusion uses them via cross-attention
+
+
+
+(1) Token weighting (prompt emphasis)
+
+    beautiful:1.5
+    (beautiful)
+    ((beautiful))
+    beautiful++
+
+    What this really does
+        Internally:
+        scales specific token vectors
+        before / during encoding (implementation differs)
+
+        Effect:
+        stronger gradient pull toward concept
+
+    Visual effect
+        - higher CFG-like behaviour but localized
+        - concept becomes dominant
+        - can distort anatomy if too strong
+        - reduces diversity
+
+    Conceptual model
+        CFG = global conditioning strength
+        Token weighting = directional conditioning strength
+
+
+
+(2) Whole prompt embedding scaling
+
+    prompt_embeds * 1.5
+    prompt_embeds * 0.7
+    prompt_embeds * -1.0
+
+    What this really does
+        Internally:
+        scales the entire semantic conditioning vector
+        after text encoder
+
+        Effect:
+        stronger / weaker overall conditioning signal
+
+    Visual effect
+        - stronger style + attributes
+        - higher contrast / saturation
+        - faster convergence
+        - overcooked or plastic look if too strong
+        - negative scale → surreal inversions
+
+    Conceptual model
+        global semantic energy scaling
+
+
+
+(3) Embedding interpolation (semantic morphing)
+
+    emb = emb_A * (1 - t) + emb_B * t
+
+    What this really does
+        Internally:
+        blends two semantic vectors in latent text space
+
+        Effect:
+        creates continuous path between concepts
+
+    Visual effect
+        - smooth transition of identity / mood / style
+        - reveals disentangled vs entangled attributes
+        - stable composition with changing semantics
+
+    Conceptual model
+        traversal along manifold between prompts
+
+
+    Key Insight
+        The embedding space is:
+        - high-dimensional
+        - anisotropic
+        - curved in effect space
+        - locally linear but globally nonlinear
+        - entangled across tokens
+        - interacts dynamically with timestep
+        
+        So when you interpolate embeddings:
+            E(t) = (1-t) * E_A + t * E_B
+        You are NOT necessarily moving along a semantic geodesic.
+        You are moving along a Euclidean straight line in latent conditioning space
+            → but UNet response is nonlinear
+            → semantic transition speed varies across t.
+
+        Semantic acceleration zones
+            Example:
+                t = 0.0 → 0.3 : almost no change
+                t = 0.3 → 0.5 : sudden mutation
+                t = 0.5 → 1.0 : smooth again
+            This happens because:
+                - some semantic directions are weakly activated
+                - some directions align with strong cross-attention axes
+            This is real measurable structure.
+            You can quantify it.
+
+
+
+(4) Embedding arithmetic (semantic direction editing)
+
+    beauty_dir = emb("beautiful") - emb("ugly")
+    new = emb("person") + 0.7 * beauty_dir
+
+    What this really does
+        Internally:
+        moves embedding along learned semantic direction
+
+        Effect:
+        controlled attribute modification without new prompt noise
+
+    Visual effect
+        - gradual attribute strengthening / weakening
+        - consistent lighting / framing retained
+        - cleaner edits than prompt rewriting
+
+    Conceptual model
+        vector field navigation in semantic space
+
+
+
+(5) Token masking / removal
+
+    zeroing tokens
+    removing words
+    shuffling token order
+
+    What this really does
+        Internally:
+        changes cross-attention routing patterns
+
+        Effect:
+        redistributes importance across concepts
+
+    Visual effect
+        - subject prominence shifts
+        - composition changes
+        - style collapse or emergence
+        - unexpected reinterpretations
+
+    Conceptual model
+        attention competition modulation
+
+
+
+(6) Cross-attention scaling (advanced)
+
+    attention_weights *= alpha
+
+    What this really does
+        Internally:
+        modifies strength of token influence during denoising
+
+        Effect:
+        spatial control of concept activation
+
+    Visual effect
+        - object insertion / removal
+        - identity locking
+        - localized style enforcement
+        - layout preservation
+
+    Conceptual model
+        dynamic conditioning strength over timesteps
+
+
+
+(7) Pooled embedding manipulation (SDXL specific)
+
+    pooled_prompt_embeds * 1.3
+
+    What this really does
+        Internally:
+        modifies global conditioning vector
+        separate from token embeddings
+
+        Effect:
+        shifts overall aesthetic / framing bias
+
+    Visual effect
+        - cinematic vs neutral composition
+        - framing / depth / lighting mood changes
+        - subtle but powerful global style control
+
+    Conceptual model
+        scene-level conditioning vs token-level conditioning
+
+
+
+(8) Negative embedding scaling
+
+    negative_prompt_embeds * 2
+
+    What this really does
+        Internally:
+        strengthens suppression directions
+
+        Effect:
+        stronger avoidance of unwanted features
+
+    Visual effect
+        - cleaner backgrounds
+        - fewer artifacts
+        - flatter contrast if too strong
+        - loss of texture richness
+
+    Conceptual model
+        repulsive force in semantic space
+
+
+
+(9) Multi-prompt blending (style fusion)
+
+    emb = 0.6 * portrait + 0.4 * sculpture
+
+    What this really does
+        Internally:
+        creates hybrid conditioning vectors
+
+        Effect:
+        mixes stylistic priors
+
+    Visual effect
+        - emergent hybrid aesthetics
+        - conceptual fusion
+        - unexpected visual motifs
+
+    Conceptual model
+        convex combination of semantic attractors
+
+
+
+(10) Embedding strength × CFG interaction
+
+    scale ↑ + CFG ↑
+
+    What this really does
+        Internally:
+        multiplies conditioning gradients during denoising
+
+        Effect:
+        nonlinear amplification or instability
+
+    Visual effect
+        - strong prompt literalness
+        - oversaturation / duplication
+        - image collapse at extremes
+
+    Conceptual model
+        coupled conditioning gain system
+
+
+
+(11) Embedding sensitivity to seed
+
+    same embedding → different seeds
+
+    What this really does
+        Internally:
+        explores stochastic sampling basin
+
+        Effect:
+        reveals stability / fragility of semantic direction
+
+    Visual effect
+        - some seeds yield consistently better aesthetics
+        - some seeds amplify distortions
+
+    Conceptual model
+        sampling landscape topology
+
+
+====================================================================
+                 SDXL CONDITIONING SYSTEM — MENTAL MAP
+====================================================================
+
+
+                           ┌──────────────────────┐
+                           │      TEXT PROMPT     │
+                           └──────────┬───────────┘
+                                      │
+                                      ▼
+                          ┌────────────────────────┐
+                          │      TOKENIZER         │
+                          │  (BPE / sentencepiece) │
+                          └──────────┬─────────────┘
+                                     │
+                                     ▼
+                   ┌────────────────────────────────────┐
+                   │          TOKEN EMBEDDINGS          │
+                   │                                    │
+                   │  → token weighting acts HERE       │
+                   │  → token masking acts HERE         │
+                   └──────────┬─────────────────────────┘
+                              │
+                              ▼
+                   ┌────────────────────────────────────┐
+                   │        TEXT ENCODER (CLIP)         │
+                   │   transformer attention network     │
+                   └──────────┬─────────────────────────┘
+                              │
+             ┌────────────────┴────────────────┐
+             ▼                                 ▼
+
+ ┌───────────────────────────┐      ┌──────────────────────────┐
+ │   PROMPT TOKEN EMBEDS     │      │   POOLED PROMPT EMBED     │
+ │   (sequence conditioning) │      │   (global conditioning)   │
+ │                           │      │                          │
+ │ → embedding scaling HERE  │      │ → pooled scaling HERE    │
+ │ → embedding arithmetic    │      │                          │
+ │ → interpolation           │      │ affects framing/mood     │
+ └──────────┬────────────────┘      └──────────┬───────────────┘
+            │                                  │
+            └──────────────┬───────────────────┘
+                           │
+                           │                                  Semantic conditioning layer
+------------------------   │    --------------------------------------------------------- 
+                           │                                  Sampling dynamics layer
+                           │
+                           ▼                                
+                ┌─────────────────────────────┐
+                │      DIFFUSION UNET         │
+                │   (cross-attention layers)  │
+                └──────────┬──────────────────┘
+                           │
+                           ▼
+                ┌─────────────────────────────┐
+                │   LATENT DENOISING LOOP     │
+                │                             │
+                │  ← steps act HERE           │
+                │  ← scheduler acts HERE      │
+                │  ← seed randomness HERE     │
+                │  ← CFG scaling acts HERE    │
+                │  ← cross-attention control  │
+                └──────────┬──────────────────┘
+                           │
+                           ▼
+                ┌─────────────────────────────┐
+                │       FINAL LATENT          │
+                └──────────┬──────────────────┘
+                           │
+------------------------   │    --------------------------------------------------------- 
+                           │                                  Decoding Layer
+                           ▼
+                ┌─────────────────────────────┐
+                │           VAE               │
+                │     latent → RGB image      │
+                └──────────┬──────────────────┘
+                           │
+                           ▼
+                       FINAL IMAGE
+
+
+can next show you:
+⭐ a temporal diffusion diagram
+(showing where conditioning pulls strongest during timesteps)
+⭐ OR a semantic vector geometry diagram
+(showing prompt space like a landscape with directions)
+⭐ OR how CFG mathematically interacts with embeddings
+

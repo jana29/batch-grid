@@ -25,50 +25,11 @@ COMMENT="GEN_STEPS x GUIDANCESCALE"
 
 NUM_COLS=7
 
-
 # -----------------------------------------
-# --- run generation of images + grid ––––
-if __name__ == "__main__":
+# --------------- MODES  –----------------–––
 
-    """
-    from batch_generate_sdxl import batch_generate_from_files
-    batch_generate_from_files()
-    batch_generate_from_files( 
-        OUTPUT_DIR,
-
-        SEEDS_PATH,
-        
-        INTRO_PATH,
-        BEAUTY_PATH,
-        OBJECT_PATH,
-        STYLE_PATH,
-
-        NEGATIVE_PROMPT,
-        GEN_STEPS,
-        GEN_GUIDANCESCALE,
-        WIDTH,
-        HEIGHT
-    )
-    batch_generate( 
-        OUTPUT_DIR,
-
-        SEEDS_PATH,
-        
-        INTRO_PATH,
-        BEAUTY_PATH,
-        OBJECT_PATH,
-        STYLE_PATH,
-
-        NEGATIVE_PROMPT,
-        GEN_STEPS,
-        GEN_GUIDANCESCALE,
-        WIDTH,
-        HEIGHT,
-
-        COMMENT
-    )
-    """
-
+def steps_X_cfg():
+    # --- get images ---
     from batch_generate_sdxl import load_pipeline
     pipeline = load_pipeline()
     from batch_generate_sdxl import batch_generate
@@ -100,18 +61,103 @@ if __name__ == "__main__":
                 WIDTH,
                 HEIGHT,
     
-                f"_steps:{steps:02d}_cfg:{cfg:02d}", # add to filename
+                f"_steps:{steps:02d}_cfg:{cfg:02d}", # add suffix to filename
         
                 COMMENT
             )
-    
-    
-    from makeGrid import generate_grid
-    generate_grid()
 
+    NUM_COLS = len(cfg_values)
+   
+    # --- grid ---
+    from makeGrid import generate_grid
+    generate_grid(NUM_COLS)
+
+    # --- zip folder ---
     import shutil
     from datetime import datetime
     ts = datetime.now().strftime("%Y%m%d_%H%M%S")
     zip_path = f"{OUTPUT_DIR}_{ts}"
     shutil.make_archive(zip_path, 'zip', OUTPUT_DIR)
     print(f"✅ Zip created: {zip_path}.zip")
+
+def get_images_default():
+    from batch_generate_sdxl import batch_generate_from_files
+    #batch_generate_from_files()
+    batch_generate_from_files( 
+        OUTPUT_DIR,
+
+        SEEDS_PATH,
+        
+        INTRO_PATH,
+        BEAUTY_PATH,
+        OBJECT_PATH,
+        STYLE_PATH,
+
+        NEGATIVE_PROMPT,
+        GEN_STEPS,
+        GEN_GUIDANCESCALE,
+        WIDTH,
+        HEIGHT
+    )
+
+# --------- embedding modes ------------
+def embedding_scale_mode():
+
+    from batch_generate_sdxl import load_pipeline
+    pipe = load_pipeline()
+
+    from generators.embedding_experiments import generate_embedding_scale_grid
+
+    scales = [-1.0, 0.5, 0.75, 1.0, 1.25, 1.5, 2.0]
+
+    generate_embedding_scale_grid(
+        pipe=pipe,
+        seeds=[908172635401928, 639201847561029],
+        beauty=["beautiful", "ugly"],
+        objects=["person"],
+        styles=["professional photography"],
+        scales=scales,
+        negative_prompt=NEGATIVE_PROMPT,
+        steps=30,
+        cfg=7,
+        width=WIDTH,
+        height=HEIGHT,
+        output_dir=OUTPUT_DIR
+    )
+
+    from makeGrid import generate_grid
+    generate_grid(len(scales))
+
+    def embedding_interpolation_mode():
+
+    from batch_generate_sdxl import load_pipeline
+    pipe = load_pipeline()
+
+    from generators.embedding_experiments import interpolate_embeddings
+
+    interpolate_embeddings(
+        pipe,
+        prompt_a="a portrait of a beautiful person",
+        prompt_b="a portrait of an ugly person",
+        steps_list=[0,0.25,0.5,0.75,1],
+        negative_prompt=NEGATIVE_PROMPT,
+        seeds=[12345],
+        steps=30,
+        cfg=7,
+        width=WIDTH,
+        height=HEIGHT,
+        output_dir=OUTPUT_DIR
+    )
+
+
+# -----------------------------------------
+# --------------- RUN  –----------------–––
+
+if __name__ == "__main__":
+
+    #steps_X_cfg()
+    #get_images_default()
+    embedding_scale_mode()
+
+
+

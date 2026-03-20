@@ -5,11 +5,11 @@ from diffusers import StableDiffusionXLPipeline
 
 
 from config_default import *
-try:
+"""try:
     from config_local import *
     print(f"✅ saving to locally defined OUTPUT_DIR {OUTPUT_DIR}")
 except ImportError:
-    print(f"⚠️ using default OUTPUT_DIR {OUTPUT_DIR}")
+    print(f"⚠️ using default OUTPUT_DIR {OUTPUT_DIR}")"""
 
 
 # --------------------------------------------------
@@ -126,20 +126,6 @@ def batch_generate_from_files(
 
                         filename = f"{seed}_{i_i}_{i_b}_{i_o}_{i_s}_0_0.png"
                         image.save(os.path.join(output_dir, filename))
-    
-    # ---- write overview txt file ------
-    file = os.path.join(output_dir, "settings.txt")
-
-    with open(file, "w") as f:
-        f.write(f"{COMMENT}")
-        f.write(f"timestamp: {datetime.now()}\n")
-        f.write(f"model: stabilityai/stable-diffusion-xl-base-1.0\n")
-        f.write(f"inference steps: {steps}\n")
-        f.write(f"cfg / guidance scale: {cfg}\n")
-        f.write(f"resolution: {w}x{h}\n")
-        f.write(f"negative_prompt: {negative_prompt}\n")
-        f.write(f"seed_file: {SEEDS_PATH}\n")
-        f.write("prompt_template: {intro} {beauty} {obj}, {style}", f"\n")
 
 
 # ----------- from call ---------------
@@ -201,24 +187,8 @@ def batch_generate(
 
                         filename = f"{seed}_{i_i}_{i_b}_{i_o}_{i_s}_0_0{add_to_filename}.png"
                         image.save(os.path.join(output_dir, filename))
-    
-    # ---- write overview txt file ------
-    file = os.path.join(output_dir, "settings.txt")
 
-    with open(file, "w") as f:
-        f.write(f"{comment}\n")
-        f.write(f"timestamp: {datetime.now()}\n")
-        f.write(f"model: stabilityai/stable-diffusion-xl-base-1.0\n")
-        f.write(f"inference steps: {steps}\n")
-        f.write(f"cfg / guidance scale: {cfg}\n")
-        f.write(f"resolution: {w}x{h}\n")
-        f.write(f"seeds: {seeds}\n")
-        f.write(f"beauty: {beauties}\n")
-        f.write(f"object(s): {objects}\n")
-        f.write(f"style(s): {styles}\n")
-        f.write(f"negative_prompt: {negative_prompt}\n")
-        f.write("prompt_template: {intro} {beauty} {obj}, {style}")
-        f.write(f"\n")
+
 
 
 # --------------------------------------------------
