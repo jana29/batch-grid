@@ -171,11 +171,11 @@ def batch_generate(
     os.makedirs(output_dir, exist_ok=True)
 
     total = len(intros) *len(beauties) * len(objects) * len(styles) * len(seeds)
-    print(f"Total amount of images: {total}")
+    #print(f"Total amount of images: {total}")
     
     count = 0
     for seed in seeds:
-        print(f"\n Seed {seed}")
+        print(f"Seed {seed}")
         for i_i, intro in enumerate(intros, 1):
             for i_b, beauty in enumerate(beauties, 1):
                 for i_o, obj in enumerate(objects, 1):
