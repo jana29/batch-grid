@@ -1,147 +1,165 @@
-#import os
-import time
+import os
 import torch
-from itertools import product
+from diffusers import StableDiffusionXLPipeline
+from diffusers import EulerDiscreteScheduler
 
 
-def generate_embedding_scale_grid(
-    pipe,
-    seeds,
-    beauty,
-    objects,
-    styles,
-    scales,
-    negative_prompt,
-    steps,
-    cfg,
-    width,
-    height,
+# --------------------------------------------------
+# Load SDXL
+# --------------------------------------------------
+
+def load_pipeline():
+    pipe = StableDiffusionXLPipeline.from_pretrained(
+        "stabilityai/stable-diffusion-xl-base-1.0",
+        torch_dtype=torch.float16,
+        use_safetensors=True,
+    )
+
+    pipe.scheduler = EulerDiscreteScheduler.from_config(pipe.scheduler.config)
+    pipe.to("cuda")
+
+    try:
+        pipe.enable_xformers_memory_efficient_attention()
+        print("xFormers enabled")
+    except:
+        print("xFormers not available")
+
+    return pipe
+
+
+# --------------------------------------------------
+# ENCODING UTIL
+# --------------------------------------------------
+
+def encode_prompt(pipe, prompt, negative_prompt):
+
+    (
+        prompt_embeds,
+        negative_prompt_embeds,
+        pooled_prompt_embeds,
+        negative_pooled_prompt_embeds,
+    ) = pipe.encode_prompt(
+        prompt,
+        negative_prompt=negative_prompt,
+        device="cuda",
+        num_images_per_prompt=1,
+        do_classifier_free_guidance=True,
+    )
+
+    return (
+        prompt_embeds,
+        negative_prompt_embeds,
+        pooled_prompt_embeds,
+        negative_pooled_prompt_embeds,
+    )
+
+
+# --------------------------------------------------
+# MANIPULATION OPS
+# --------------------------------------------------
+
+def token_weight(prompt_embeds, token_index, weight):
+    prompt_embeds[:, token_index] *= weight
+    return prompt_embeds
+
+
+def scale_embedding(prompt_embeds, scale):
+    return prompt_embeds * scale
+
+
+def interpolate_embeddings(e0, e1, t):
+    return (1 - t) * e0 + t * e1
+
+
+def scale_pooled(pooled_embeds, scale):
+    return pooled_embeds * scale
+
+
+# --------------------------------------------------
+# Batch generation with embedding manipulation
+# --------------------------------------------------
+
+def batch_generate_embeddings(
+
     output_dir,
-    skip_existing=True,
+    pipe=None,
+
+    seeds=[0],
+
+    intros=[(1,"a portrait of a")],
+    beauties=[(1,"beautiful")],
+    objects=[(1,"person")],
+    styles=[(1,"professional photography")],
+
+    manipulation_type=0,
+    manipulation_values=[0.0],
+
+    negative_prompt="",
+    steps=30,
+    cfg=7,
+    w=512,
+    h=744
 ):
-    #os.makedirs(output_dir, exist_ok=True)
 
-    total_images = len(product(beauty, objects, styles)) * len(seeds) * len(scales)
-    print(f"\nEmbedding experiment")
-    print(f"Prompt combos: {len(prompt_combos)}")
-    print(f"Seeds: {len(seeds)}")
-    print(f"Scales: {len(scales)}")
-    print(f"TOTAL IMAGES: {total_images}\n")
+    if pipe is None:
+        pipe = load_pipeline()
 
-    start_time = time.time()
-    img_index = 0
-
-    for combo_index, (b, o, s) in enumerate(product(beauty, objects, styles), 1):
-
-        prompt = f"a portrait of a {b} {o}, {s}"
-
-        # encode ONCE per prompt combo
-        prompt_embeds, neg_embeds, pooled, neg_pooled = pipe.encode_prompt(
-            prompt=prompt,
-            negative_prompt=negative_prompt,
-            device="cuda",
-            num_images_per_prompt=1,
-            do_classifier_free_guidance=True,
-        )
-
-        for seed in seeds:
-            for scale in scales:
-
-                img_index += 1
-
-                filename = f"{seed}_{combo_index}_em{scale:.2f}.png"
-                path = os.path.join(output_dir, filename)
-
-                if skip_existing and os.path.exists(path):
-                    print(f"[skip] {filename}")
-                    continue
-
-                generator = torch.Generator("cuda").manual_seed(seed)
-
-                scaled_embeds = prompt_embeds * scale
-
-                image = pipe(
-                    prompt_embeds=scaled_embeds,
-                    negative_prompt_embeds=neg_embeds,
-                    pooled_prompt_embeds=pooled,
-                    negative_pooled_prompt_embeds=neg_pooled,
-                    num_inference_steps=steps,
-                    guidance_scale=cfg,
-                    width=width,
-                    height=height,
-                    original_size=(width, height),
-                    target_size=(width, height),
-                    generator=generator,
-                ).images[0]
-
-                image.save(path)
-
-                elapsed = time.time() - start_time
-                eta = (elapsed / img_index) * (total_images - img_index)
-
-                print(
-                    f"[{img_index}/{total_images}] "
-                    f"seed={seed} scale={scale:.2f} "
-                    f"ETA={eta/60:.1f}m"
-                )
-
-
-def interpolate_embeddings(
-    pipe,
-    prompt_a,
-    prompt_b,
-    steps_list,
-    negative_prompt,
-    seeds,
-    steps,
-    cfg,
-    width,
-    height,
-    output_dir,
-):
     os.makedirs(output_dir, exist_ok=True)
 
-    emb_a, neg_a, pool_a, neg_pool_a = pipe.encode_prompt(
-        prompt=prompt_a,
-        negative_prompt=negative_prompt,
-        device="cuda",
-        num_images_per_prompt=1,
-        do_classifier_free_guidance=True,
-    )
+    count = 0
+    total = len(seeds)*len(intros)*len(beauties)*len(objects)*len(styles)*len(manipulation_values)
 
-    emb_b, _, pool_b, _ = pipe.encode_prompt(
-        prompt=prompt_b,
-        negative_prompt=negative_prompt,
-        device="cuda",
-        num_images_per_prompt=1,
-        do_classifier_free_guidance=True,
-    )
+    for seed in seeds:
+        generator = torch.Generator("cuda").manual_seed(seed)
+        for i_i, intro in intros:
+            for i_b, beauty in beauties:
+                for i_o, obj in objects:
+                    for i_s, style in styles:
 
-    total = len(steps_list) * len(seeds)
-    i = 0
+                        prompt = f"{intro} {beauty} {obj}, {style}"
 
-    for t in steps_list:
-        emb = emb_a * (1 - t) + emb_b * t
-        pool = pool_a * (1 - t) + pool_b * t
+                        base = encode_prompt(pipe, prompt, negative_prompt)
 
-        for seed in seeds:
-            i += 1
+                        for m in manipulation_values:
 
-            generator = torch.Generator("cuda").manual_seed(seed)
+                            count += 1
+                            print(f"[{count}/{total}] seed={seed} manip={m}")
 
-            image = pipe(
-                prompt_embeds=emb,
-                negative_prompt_embeds=neg_a,
-                pooled_prompt_embeds=pool,
-                negative_pooled_prompt_embeds=neg_pool_a,
-                num_inference_steps=steps,
-                guidance_scale=cfg,
-                width=width,
-                height=height,
-                generator=generator,
-            ).images[0]
+                            (
+                                prompt_embeds,
+                                negative_embeds,
+                                pooled,
+                                negative_pooled,
+                            ) = base
 
-            fname = f"interp_{t:.2f}_{seed}.png"
-            image.save(os.path.join(output_dir, fname))
+                            # clone for safety
+                            prompt_embeds = prompt_embeds.clone()
+                            pooled = pooled.clone()
 
-            print(f"[{i}/{total}] interp={t:.2f} seed={seed}")
+                            # -------- apply manipulation --------
+
+                            if manipulation_type == 1:
+                                prompt_embeds = scale_embedding(prompt_embeds, m)
+
+                            elif manipulation_type == 2:
+                                pooled = scale_pooled(pooled, m)
+
+                            # (token weighting + interpolation later)
+
+                            # -------- diffusion --------
+
+                            image = pipe(
+                                prompt_embeds=prompt_embeds,
+                                negative_prompt_embeds=negative_embeds,
+                                pooled_prompt_embeds=pooled,
+                                negative_pooled_prompt_embeds=negative_pooled,
+                                num_inference_steps=steps,
+                                guidance_scale=cfg,
+                                width=w,
+                                height=h,
+                                generator=generator,
+                            ).images[0]
+
+                            filename = f"{seed}_{i_i}_{i_b}_{i_o}_{i_s}_{manipulation_type}_{m}_{steps}_{cfg}.png"
+
+                            image.save(os.path.join(output_dir, filename))

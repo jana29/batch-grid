@@ -90,7 +90,10 @@ def run(
 
     pipe,
 
-    folder_name
+    folder_name,
+
+    steps=GEN_STEPS,
+    cfg=GEN_GUIDANCESCALE
 ):
     # set output subfolder
 
@@ -199,7 +202,7 @@ if __name__ == "__main__":
         "cfg" #8
     ]
 
-    
+    """
     # 100 seeds,
     # a portrait of a beautiful person, professional photography
     run(
@@ -232,7 +235,23 @@ if __name__ == "__main__":
 
         "beauty_x_seeds" #Folder Name
     )
+    """
+    run(
+        focus[7], focus[8],   # col x rows
 
+        seeds_all, [1], # range 10,20,30,...
+
+        intro_lines_all, [1],
+        beauty_lines_all, range(1,10+1), # range 1-10
+        object_lines_all, [1],
+        style_lines_all, [1],
+
+        pipeline,
+
+        "steps_x_cfg", #Folder Name
+        [10, 20], #steps
+        [4, 6, 8] #cfg
+    )
 
     # --- zip folder ---
     shutil.make_archive(OUTPUT_DIR, 'zip', OUTPUT_DIR)

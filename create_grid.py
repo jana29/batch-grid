@@ -215,9 +215,12 @@ def write_run_report(
             "beauty": [i for i,_ in beauties],
             "object": [i for i,_ in objects],
             "style": [i for i,_ in styles],
+            "manipulation_type": [i for i,_ in manipulation_type],
+            "manipulation": [manipulation],
             "steps": [steps],
             "cfg": [cfg],
         }
+        
         f.write("\nGRID OVERVIEW\n")
 
         # a x b grid
@@ -283,8 +286,7 @@ def write_run_report(
         if manipulation_type == "NONE":
             f.write("manipulation: NONE\n\n")
         else:
-            # adapt later
-            f.write(f"type: {manipulation_type} {manipulation}\n\n")
+            f.write(f"type: {manipulation_type}{manipulation}\n\n") ## not ideal!
 
         # ---------- SAMPLING ----------
         f.write("=== SAMPLING ===\n")

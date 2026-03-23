@@ -47,8 +47,8 @@ def batch_generate(
     amount = 1,
 
     negative_prompt = "watermark, text, picture frame, face card, multiple faces",
-    steps = 20,
-    cfg = 7,
+    step_values = [30],
+    cfg_values = [8],
     w = 512,
     h = 744
 ):
@@ -57,31 +57,32 @@ def batch_generate(
 
     count = 0
     for seed in seeds:
+        generator = torch.Generator("cuda").manual_seed(seed)
         for i_i, intro in intros:
             for i_b, beauty in beauties:
                 for i_o, obj in objects:
                     for i_s, style in styles:
-                        count += 1
+                        for steps in step_values:
+                            for cfg in cfg_values:
+                                count += 1
 
-                        prompt = f"{intro} {beauty} {obj}, {style}"
-                        print(f"[{count}/{amount}] {prompt}, seed: {seed}")
+                                prompt = f"{intro} {beauty} {obj}, {style}"
+                                print(f"[{count}/{amount}] {prompt}, seed: {seed}")
 
-                        generator = torch.Generator("cuda").manual_seed(seed)
+                                image = pipe(
+                                    prompt=prompt,
+                                    negative_prompt=negative_prompt,
+                                    num_inference_steps=steps,
+                                    guidance_scale=cfg,
+                                    width=w,
+                                    height=h,
+                                    original_size=(512, 744),
+                                    target_size=(512, 744),
+                                    generator=generator,
+                                ).images[0]
 
-                        image = pipe(
-                            prompt=prompt,
-                            negative_prompt=negative_prompt,
-                            num_inference_steps=steps,
-                            guidance_scale=cfg,
-                            width=w,
-                            height=h,
-                            #original_size=(512, 744),
-                            #target_size=(512, 744),
-                            generator=generator,
-                        ).images[0]
-
-                        filename = f"{seed}_{i_i}_{i_b}_{i_o}_{i_s}_0_0_{steps}_{cfg}.png"
-                        image.save(os.path.join(output_dir, filename))
+                                filename = f"{seed}_{i_i}_{i_b}_{i_o}_{i_s}_0_0_{steps}_{cfg}.png"
+                                image.save(os.path.join(output_dir, filename))
 
 
 
