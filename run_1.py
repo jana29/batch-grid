@@ -79,7 +79,7 @@ def select_seeds(seeds, selector):
 #                               MAIN FUNCTION
 # =======================================================================
 def run(
-    cols, rows,     # grid a x b
+    rows, cols,     # grid a x b
 
     seed_lines, seed_selector,
 
@@ -163,7 +163,7 @@ def run(
         amount,
         NEGATIVE_PROMPT,
         MANIPULATION, MANIPULATION,
-        GEN_STEPS, GEN_GUIDANCESCALE,
+        steps, cfg,
         WIDTH, HEIGHT
     )
     
@@ -222,7 +222,7 @@ if __name__ == "__main__":
 
     # 10 seeds, 10 beauties
     run(
-        focus[2], focus[0],   # col x rows : beauty x seed
+        focus[0], focus[2],   #  ↓ x → / rows, cols : seed x beauty
 
         seeds_all, range(10,100+1, 10), # range 10,20,30,...
 
@@ -239,7 +239,7 @@ if __name__ == "__main__":
 
     # cfg x steps test
     run(
-        focus[7], focus[8],   # col x rows
+        focus[7], focus[8],   # ↓ x → / rows, cols: steps x cfg
 
         seeds_all, [1], 
 
