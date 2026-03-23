@@ -4,8 +4,6 @@ import torch
 from diffusers import StableDiffusionXLPipeline
 
 
-#from run_1.py import *
-
 # --------------------------------------------------
 # Load SDXL
 # --------------------------------------------------

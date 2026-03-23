@@ -103,9 +103,11 @@ def generate_ab_grid(
             else:
                 csv_rows[r][c] = "missing"
 
-    canvas.save(os.path.join(folder, f"grid_{row_axis}_x_{col_axis}.png"))
+    filename=f"grid_{row_axis}_x_{col_axis}"
+    canvas.save(os.path.join(folder, f"{filename}.png"))
+    canvas.save(os.path.join(folder, f"{filename}.pdf"), "PDF", resolution=300.0)
 
-    with open(os.path.join(folder, f"grid_{row_axis}_x_{col_axis}.csv"), "w", newline="") as f:
+    with open(os.path.join(folder, f"{filename}.csv"), "w", newline="") as f:
         writer = csv.writer(f)
         writer.writerows(csv_rows)
 
@@ -166,9 +168,11 @@ def generate_linear_grid(
 
         csv_rows[r][c] = fname
 
-    canvas.save(os.path.join(folder, f"grid_linear_{axis}.png"))
+    filename=f"grid_linear_{axis}"
+    canvas.save(os.path.join(folder, f"{filename}.png"))
+    canvas.save(os.path.join(folder, f"{filename}.pdf"), "PDF", resolution=300.0)
 
-    with open(os.path.join(folder, f"grid_linear_{axis}.csv"), "w", newline="") as f:
+    with open(os.path.join(folder, f"{filename}.csv"), "w", newline="") as f:
         writer = csv.writer(f)
         writer.writerows(csv_rows)
 
@@ -181,7 +185,7 @@ def generate_linear_grid(
 
 def write_run_report(
     folder,
-    row_axis, col_axis,
+    row_axis, col_axis, num_cols,
     seeds, intros, beauties, objects, styles,
     total,
     negative_prompt,
@@ -205,31 +209,53 @@ def write_run_report(
         f.write(f"grid: rows={row_axis}, cols={col_axis}\n")
 
         # ---------- GRID OVERVIEW ----------
-        if row_axis is not None and col_axis is not None:
+        axis_map = {
+            "seed": seeds,
+            "intro": [i for i,_ in intros],
+            "beauty": [i for i,_ in beauties],
+            "object": [i for i,_ in objects],
+            "style": [i for i,_ in styles],
+            "steps": [steps],
+            "cfg": [cfg],
+        }
+        f.write("\nGRID OVERVIEW\n")
 
-            axis_map = {
-                "seed": seeds,
-                "intro": [i for i,_ in intros],
-                "beauty": [i for i,_ in beauties],
-                "object": [i for i,_ in objects],
-                "style": [i for i,_ in styles],
-                "steps": [steps],
-                "cfg": [cfg],
-            }
-
+        # a x b grid
+        if row_axis is not None and col_axis is not None:       
             row_vals = sorted(set(axis_map.get(row_axis, [])))
             col_vals = sorted(set(axis_map.get(col_axis, [])))
-
-            f.write("\nGRID OVERVIEW\n")
+            
             f.write(f"{row_axis} \\ {col_axis}\n")
-
-            f.write("     " + " ".join(f"{c:>6}" for c in col_vals) + "\n")
+            
+            f.write("             " + " ".join(f"{c:>6}" for c in col_vals) + "\n")
 
             for rv in row_vals:
                 line = f"{rv:>4} | "
                 for _ in col_vals:
                     line += "  X  "
                 f.write(line + "\n")
+        
+        # linear grid
+        else:
+            if row_axis is None:
+                vals=sorted(axis_map.get(col_axis, []))
+                parameter=col_axis
+            elif col_axis is None:
+                vals=sorted(axis_map.get(row_axis, []))
+                parameter=row_axis
+            
+            num_rows = math.ceil(len(vals) / num_cols)
+            f.write(f"{parameter} in {num_cols}x{num_rows} grid")
+
+            for i, v in enumerate(vals):
+                if i % num_cols == 0:
+                    f.write("\n")
+                f.write(f"{str(v):>6} ")
+
+            f.write("\n")
+
+
+
 
         f.write("\n")
 
@@ -245,7 +271,7 @@ def write_run_report(
             f.write(f"{name}\n")
             for idx, text in data:
                 f.write(f"  {idx}: {text}\n")
-            f.write("\n")
+            f.write("\n"
 
         write_component("INTRO", intros)
         write_component("BEAUTY", beauties)

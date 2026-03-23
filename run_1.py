@@ -1,8 +1,13 @@
 # ---- INFO ----
-# this file generates sets of 100 images + image grid + csv file with info
+# this file generates sets of 100 images + image grid + csv & txt file with info
 # ... with the following settings:
-# - 
+# - 100 seeds
+# - 10 seeds / beauty indices 1-10
 # -> total of XX images, X grids, ...
+
+# IN TERMINAL:
+# conda activate sdxl
+# python run_1.py
 
 import shutil
 from datetime import datetime
@@ -150,7 +155,7 @@ def run(
     # ---- save settings info in txt file -----
     write_run_report(
         folder,
-        rows, cols,
+        rows, cols, NUM_COLS,
         seeds, intros, beauties, objects, styles,
         amount,
         NEGATIVE_PROMPT,
@@ -216,10 +221,10 @@ if __name__ == "__main__":
     run(
         focus[2], focus[0],   # col x rows : beauty x seed
 
-        seeds_all, range(1,100, 10),
+        seeds_all, range(10,100+1, 10), # range 10,20,30,...
 
         intro_lines_all, [1],
-        beauty_lines_all, range(1,10),
+        beauty_lines_all, range(1,10+1), # range 1-10
         object_lines_all, [1],
         style_lines_all, [1],
 
