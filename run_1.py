@@ -236,13 +236,15 @@ if __name__ == "__main__":
         "beauty_x_seeds" #Folder Name
     )
     """
+
+    # cfg x steps test
     run(
         focus[7], focus[8],   # col x rows
 
-        seeds_all, [1], # range 10,20,30,...
+        seeds_all, [1], 
 
         intro_lines_all, [1],
-        beauty_lines_all, range(1,10+1), # range 1-10
+        beauty_lines_all, [3], 
         object_lines_all, [1],
         style_lines_all, [1],
 

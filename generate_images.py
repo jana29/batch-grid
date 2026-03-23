@@ -67,7 +67,7 @@ def batch_generate(
                                 count += 1
 
                                 prompt = f"{intro} {beauty} {obj}, {style}"
-                                print(f"[{count}/{amount}] {prompt}, seed: {seed}")
+                                print(f"[{count}/{amount}] {prompt}, seed: {seed}, steps: {steps}, cfg: {cfg}")
 
                                 image = pipe(
                                     prompt=prompt,
