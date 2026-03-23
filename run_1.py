@@ -44,7 +44,7 @@ def load_lines(path):
 
 def load_seeds(path):
     with open(path, "r") as f:
-        return [int(line.strip()) for line in f if line.strip()][:AMOUNT]
+        return [int(line.strip()) for line in f if line.strip()]
 
 def select_lines(lines, selector):
     if selector is None:
