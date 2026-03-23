@@ -26,7 +26,8 @@ STYLE_PATH="prompt/04_style.txt"
 
 NEGATIVE_PROMPT="watermark, text, picture frame, face card, multiple faces" #never changed (so far)
 
-MANIPULATION="NONE"     #cannot change in this file
+MANIPULATION_TYPE=[(0, "NONE")]     #don't change in this file (see run_2_embeddings.py)
+MANIPULATION=[0]               #don't change in this file (see run_2_embeddings.py)
 
 GEN_STEPS=30            #default
 GEN_GUIDANCESCALE=8     #default
@@ -36,7 +37,7 @@ WIDTH = 512             #never changed (so far)
 
 # --- grid settings ----
 
-NUM_COLS=10
+NUM_COLS=10             #amount of columns for linear grids 
 
 # =======================================================================
 #                               load from files
@@ -162,7 +163,7 @@ def run(
         seeds, intros, beauties, objects, styles,
         amount,
         NEGATIVE_PROMPT,
-        MANIPULATION, MANIPULATION,
+        MANIPULATION_TYPE, MANIPULATION,
         steps, cfg,
         WIDTH, HEIGHT
     )
@@ -196,8 +197,8 @@ if __name__ == "__main__":
         "beauty", #2
         "object", #3
         "style", #4
-        "manipulation_type", #5
-        "manipulation", #6
+        "manipulation_type", #5 (we don't do that here)
+        "manipulation", #6 (we don't do that here)
         "steps", #7 
         "cfg" #8
     ]

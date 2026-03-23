@@ -215,8 +215,8 @@ def write_run_report(
             "beauty": [i for i,_ in beauties],
             "object": [i for i,_ in objects],
             "style": [i for i,_ in styles],
-            #"manipulation_type": [i for i,_ in manipulation_type],
-            #"manipulation": [manipulation],
+            "manipulation_type": [i for i,_ in manipulation_type],
+            "manipulation": [manipulation],
             "steps": [steps],
             "cfg": [cfg],
         }
@@ -283,10 +283,14 @@ def write_run_report(
 
         # ---------- MANIPULATION ----------
         f.write("=== MANIPULATION ===\n")
-        if manipulation_type == "NONE":
+        if manipulation == [0]:
             f.write("manipulation: NONE\n\n")
         else:
-            f.write(f"type: {manipulation_type}{manipulation}\n\n") ## not ideal!
+            write_component("MANIPULATION TYPE", manipulation_type)
+            f.write("MANIPULATION FACTOR\n")
+            for m in manipulation:
+                f.write(f"  {m}\n")
+            f.write("\n")
 
         # ---------- SAMPLING ----------
         f.write("=== SAMPLING ===\n")
