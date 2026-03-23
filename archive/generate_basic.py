@@ -26,10 +26,6 @@ def load_seeds(path):
         return [int(line.strip()) for line in f if line.strip()][:AMOUNT]
 
 
-# ---- save settings to txt file -------------------
-from datetime import datetime
-
-
 
 # --------------------------------------------------
 # Load SDXL
@@ -75,7 +71,6 @@ def batch_generate_from_files(
     cfg = GEN_GUIDANCESCALE,
     w = WIDTH,
     h = HEIGHT
-    # --
 ):
 
     os.makedirs(output_dir, exist_ok=True)

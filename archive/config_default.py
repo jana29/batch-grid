@@ -25,14 +25,17 @@ COMMENT="GEN_STEPS x GUIDANCESCALE"
 
 NUM_COLS=7
 
-# -----------------------------------------
-# --------------- MODES  –----------------–––
 
+# =======================================================================
+#                               MODES
+# =======================================================================
+
+
+# ----------------------- steps x cfg -------------------------------
 def steps_X_cfg():
-    # --- get images ---
-    from batch_generate_sdxl import load_pipeline
+    from generate_basic import load_pipeline
     pipeline = load_pipeline()
-    from batch_generate_sdxl import batch_generate
+    from generate_basic import batch_generate
     
     steps_values = range(1,20,2)
     cfg_values = range(1,32,5)
@@ -80,8 +83,10 @@ def steps_X_cfg():
     shutil.make_archive(zip_path, 'zip', OUTPUT_DIR)
     print(f"✅ Zip created: {zip_path}.zip")
 
+
+# ----------------------- basic basic -------------------------------
 def get_images_default():
-    from batch_generate_sdxl import batch_generate_from_files
+    from generate_basic import batch_generate_from_files
     #batch_generate_from_files()
     batch_generate_from_files( 
         OUTPUT_DIR,
@@ -99,11 +104,12 @@ def get_images_default():
         WIDTH,
         HEIGHT
     )
+# --------------------------------------------------
 
-# --------- embedding modes ------------
+# -------------------- scale embeddings -------------------
 def embedding_scale_mode():
 
-    from batch_generate_sdxl import load_pipeline
+    from generate_basic import load_pipeline
     pipe = load_pipeline()
 
     from generators.embedding_experiments import generate_embedding_scale_grid
@@ -128,9 +134,10 @@ def embedding_scale_mode():
     from makeGrid import generate_grid
     generate_grid(len(scales))
 
-    def embedding_interpolation_mode():
+# -------------------- interpolate <- -> embeddings -------------------
+def embedding_interpolation_mode():
 
-    from batch_generate_sdxl import load_pipeline
+    from generate_basic import load_pipeline
     pipe = load_pipeline()
 
     from generators.embedding_experiments import interpolate_embeddings
@@ -150,8 +157,9 @@ def embedding_scale_mode():
     )
 
 
-# -----------------------------------------
-# --------------- RUN  –----------------–––
+# =======================================================================
+                                    RUN
+# =======================================================================
 
 if __name__ == "__main__":
 
@@ -161,3 +169,4 @@ if __name__ == "__main__":
 
 
 
+# =========================================================================
