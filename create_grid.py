@@ -217,8 +217,8 @@ def write_run_report(
             "style": [i for i,_ in styles],
             "manipulation_type": [i for i,_ in manipulation_type],
             "manipulation": [manipulation],
-            "steps": [steps],
-            "cfg": [cfg],
+            "steps": steps,
+            "cfg": cfg,
         }
         
         f.write("\nGRID OVERVIEW\n")
