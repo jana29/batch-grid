@@ -24,15 +24,15 @@ BEAUTY_PATH="prompt/02_beauty.txt"
 OBJECT_PATH="prompt/03_object.txt"
 STYLE_PATH="prompt/04_style.txt"
 
-NEGATIVE_PROMPT="watermark, text, picture frame, face card, multiple faces"
+NEGATIVE_PROMPT="watermark, text, picture frame, face card, multiple faces" #never changed (so far)
 
-MANIPULATION="NONE"
+MANIPULATION="NONE"     #cannot change in this file
 
-GEN_STEPS=30
-GEN_GUIDANCESCALE=8
+GEN_STEPS=30            #default
+GEN_GUIDANCESCALE=8     #default
 
-HEIGHT = 744
-WIDTH = 512
+HEIGHT = 744            #never changed (so far)
+WIDTH = 512             #never changed (so far)
 
 # --- grid settings ----
 
@@ -92,8 +92,8 @@ def run(
 
     folder_name,
 
-    steps=GEN_STEPS,
-    cfg=GEN_GUIDANCESCALE
+    steps=[GEN_STEPS],
+    cfg=[GEN_GUIDANCESCALE]
 ):
     # set output subfolder
 
@@ -109,7 +109,7 @@ def run(
     objects = select_lines(object_lines, obj_selector)
     styles = select_lines(style_lines, style_selector)
 
-    amount = len(seeds) * len(intros) *len(beauties) * len(objects) * len(styles)
+    amount = len(seeds) * len(intros) *len(beauties) * len(objects) * len(styles) * len(steps) * len(cfg)
     print(f"amount of images in this batch: {amount}")
 
     # -------- generate images --------
@@ -127,8 +127,8 @@ def run(
         amount,
 
         NEGATIVE_PROMPT,
-        GEN_STEPS,
-        GEN_GUIDANCESCALE,
+        steps,
+        cfg,
         WIDTH,
         HEIGHT
     )
