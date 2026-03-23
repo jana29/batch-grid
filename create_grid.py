@@ -274,7 +274,7 @@ def write_run_report(
             f.write(f"{name}\n")
             for idx, text in data:
                 f.write(f"  {idx}: {text}\n")
-            f.write("\n"
+            f.write("\n")
 
         write_component("INTRO", intros)
         write_component("BEAUTY", beauties)
