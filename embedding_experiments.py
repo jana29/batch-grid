@@ -268,7 +268,9 @@ def batch_generate_interpolation(
                         generator=generator,
                     ).images[0]
 
-                    filename = f"{seed}_{filename_prompt}_3_{t}_{steps}_{cfg}.png"
+                    t_str = f"{t:.4f}".replace(".", "p")
+                    filename = f"{seed}_{filename_prompt}_3_{t_str}_{steps}_{cfg}.png"
+
                     image.save(os.path.join(output_dir, filename))
 
     print("✅ interpolation batch finished")

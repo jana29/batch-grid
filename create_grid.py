@@ -20,10 +20,14 @@ def parse_filename(fname):
     try:
         return {
             "seed": int(parts[0]),
-            "intro": int(parts[1]),
-            "beauty": int(parts[2]),
-            "object": int(parts[3]),
-            "style": int(parts[4]),
+            def parse_axis(x):
+                if "," in x:
+                    return x   # keep string for interpolation axes
+                return int(x)
+            "intro": parse_axis(parts[1]),
+            "beauty": parse_axis(parts[2]),
+            "object": parse_axis(parts[3]),
+            "style": parse_axis(parts[4]),
             "manipulation_type": int(parts[5]),
             "manipulation_value": float(parts[6]),
             "steps": int(parts[7]),

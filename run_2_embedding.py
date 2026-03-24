@@ -29,7 +29,7 @@ GEN_CFG=[8]
 WIDTH=512
 HEIGHT=744
 
-NUM_COLS=8
+NUM_COLS=10
 
 # --------------------------------------------------
 # load from files
