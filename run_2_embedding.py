@@ -333,11 +333,12 @@ if __name__ == "__main__":
         "steps", #7 
         "cfg" #8
     ]
-    """
+    
     # default settings: 
     # "a portrait of a beautiful person, professional photography", seed: 510891975915924, GEN_STEPS,GEN_GUIDANCESCALE,NEGATIVE_PROMPT
+    MANIPULATION_SCALE_VALUES = np.linspace(-1, 3, 10).tolist()
     run_embedding_scale(
-        manipulation_type_lines_all, None,
+        manipulation_type_lines_all, [1, 2],
         MANIPULATION_SCALE_VALUES,
         pipe,
         "mani_type_x_scales",
@@ -351,7 +352,19 @@ if __name__ == "__main__":
         manipulation_type_lines_all, [1],
         MANIPULATION_SCALE_VALUES,
         pipe,
-        "10_seeds_x_mani1-scales",
+        "10_seeds_x_mani1-scales_1",
+        rows="seed", cols="manipulation_value",     # grid a x b (focus variables)
+
+        seed_lines=seeds_all, seed_selector=range(10,100+1, 10)
+    )
+    # 10 seeds x emb_scaled
+    # "a portrait of a beautiful person, professional photography", GEN_STEPS,GEN_GUIDANCESCALE,NEGATIVE_PROMPT
+    MANIPULATION_SCALE_VALUES = np.linspace(-1, 10, 10).tolist()
+    run_embedding_scale(
+        manipulation_type_lines_all, [1],
+        MANIPULATION_SCALE_VALUES,
+        pipe,
+        "10_seeds_x_mani1-scales_2",
         rows="seed", cols="manipulation_value",     # grid a x b (focus variables)
 
         seed_lines=seeds_all, seed_selector=range(10,100+1, 10)
@@ -370,28 +383,22 @@ if __name__ == "__main__":
         seed_lines=seeds_all, seed_selector=[10]
     )
     
-    run_embedding_scale(
-        manipulation_type_lines_all, [1],
-        MANIPULATION_SCALE_VALUES,
-        pipe,
-        "embedding_scale_test"
-        rows="seed", cols="manipulation_value",     # grid a x b (focus variables)
-        num_cols=NUM_COLS,
+    #--------------------------------------
 
-        seeds=[510891975915924], seed_selector=[1],
-
-        intro_lines=["a portrait of a"], intro_selector=[1],
-        beauty_lines=["beautiful"], beauty_selector=[3],
-        object_lines=["person"], object_selector=[1],
-        style_lines=["professional photography"], style_selector=[1],
-    )
-    """
     # interpolate w 10 values
-    t_vals=np.linspace(0, 1, 10).tolist()
+    t_vals=np.linspace(0, 1, 100).tolist()
     run_embedding_interpolation(
         t_vals,
         pipe,
-        "10_interpols"
+        "100_interpols_0-1"
+        seed_lines=seeds_all, seed_selector=[10]
+    )
+    t_vals=np.linspace(-0.5, 1.5, 100).tolist()
+    run_embedding_interpolation(
+        t_vals,
+        pipe,
+        "100_interpols_-0.5-1.5",
+        seed_lines=seeds_all, seed_selector=[10]
     )
 
     shutil.make_archive(OUTPUT_DIR, 'zip', OUTPUT_DIR)

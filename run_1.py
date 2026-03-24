@@ -231,7 +231,7 @@ if __name__ == "__main__":
 
         pipeline,
 
-        "beauty_x_seeds" #Folder Name
+        "beauty_x_seeds_1" #Folder Name
     )
     
     # 10 seeds, 10 beauties : words without semantic scaling
@@ -247,14 +247,14 @@ if __name__ == "__main__":
 
         pipeline,
 
-        "beauty_x_seeds" #Folder Name
+        "beauty_x_seeds_2" #Folder Name
     )
 
     # cfg x steps test
     run(
         focus[7], focus[8],   # ↓ x → / rows, cols: steps x cfg
 
-        seeds_all, [1], 
+        seeds_all, [10], 
 
         intro_lines_all, [1],
         beauty_lines_all, [3], 
@@ -272,7 +272,7 @@ if __name__ == "__main__":
     run(
         focus[2], focus[8],   # ↓ x → / rows, cols: steps x cfg
 
-        seeds_all, [1], 
+        seeds_all, [10], 
 
         intro_lines_all, [1],
         beauty_lines_all, [3,8,13,18,22,24,25,26,27,28], 

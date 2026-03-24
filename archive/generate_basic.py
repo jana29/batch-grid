@@ -4,6 +4,14 @@ import torch
 from diffusers import StableDiffusionXLPipeline
 
 
+from config_default import *
+"""try:
+    from config_local import *
+    print(f"✅ saving to locally defined OUTPUT_DIR {OUTPUT_DIR}")
+except ImportError:
+    print(f"⚠️ using default OUTPUT_DIR {OUTPUT_DIR}")"""
+
+
 # --------------------------------------------------
 # Utilities
 # --------------------------------------------------
