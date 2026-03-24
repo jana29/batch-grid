@@ -146,7 +146,13 @@ def batch_generate_embeddings(
                                         elif i_m == 4:
                                             prompt_embeds = scale_embedding(prompt_embeds, m)
                                             pooled = scale_pooled(pooled, m)
-                                        elif i_m == 3 or i_m > 4:
+                                        """
+                                        elif i_m == 5:
+                                            interpolated_scale=manipulation_values[len(manipulation_values)-1]-m
+                                            prompt_embeds = scale_embedding(prompt_embeds, m)
+                                            pooled = scale_pooled(pooled, interpolated_scale)
+                                        """
+                                        else:
                                             raise ValueError(
                                                 f"batch_generate_embeddings() can only do 'simple' embedding scaling\n"
                                                 f"therefore it only works with manipylation_type 1,2 or 4"
@@ -203,8 +209,8 @@ def batch_generate_interpolation(
 
     os.makedirs(output_dir, exist_ok=True)
 
+    # prepare prompts
     embed_infos = []
-    filename_prompt="0_0_0_0"
     for i_i, intro in intros:
             for i_b, beauty in beauties:
                 for i_o, obj in objects:
@@ -222,9 +228,11 @@ def batch_generate_interpolation(
         )
     (embA, i_i0, i_b0, i_o0, i_s0) = embed_infos[0]
     (embB, i_i1, i_b1, i_o1, i_s1) = embed_infos[1]
+    
+    # get middle part of filename, e.g. 0_3,8_0_0
+    filename_prompt="0_0_0_0"
     def pair_str(a,b):
         return f"{a},{b}" if a != b else str(a)
-    # get middle part of filename, e.g. 0_3,8_0_0
     filename_prompt = (
         f"{pair_str(i_i0,i_i1)}_{pair_str(i_b0,i_b1)}_{pair_str(i_o0,i_o1)}_{pair_str(i_s0,i_s1)}"
     )

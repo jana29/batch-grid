@@ -31,6 +31,12 @@ HEIGHT=744
 
 NUM_COLS=10
 
+# manipulation compatibility
+SUPPORTED_MANIPULATIONS = {
+    "embedding_scale": {1, 2, 4, 5},   # renderer: batch_generate_embeddings
+    "interpolation": {3},               # renderer: batch_generate_interpolation
+}
+
 # --------------------------------------------------
 # load from files
 # --------------------------------------------------
@@ -39,11 +45,9 @@ def load_lines(path):
     with open(path, "r", encoding="utf-8") as f:
         return [line.strip() for line in f if line.strip()]
 
-
 def load_seeds(path):
     with open(path, "r") as f:
         return [int(line.strip()) for line in f if line.strip()]
-
 
 def select_lines(lines, selector):
 
@@ -181,6 +185,18 @@ def run_embedding_scale(
         intro_lines, intro_selector, beauty_lines, beauty_selector, object_lines, object_selector, style_lines, style_selector,
         manipulation_type, manipulation_indices,
     )
+    
+    # manipulation compatibility check
+    invalid = [
+        i for i, _ in manipulations
+        if i not in SUPPORTED_MANIPULATIONS["embedding_scale"]
+    ]
+    if invalid:
+        raise ValueError(
+            f"Manipulation type(s) {invalid} are not supported by embedding_scale renderer.\n"
+            f"Allowed types: {sorted(SUPPORTED_MANIPULATIONS['embedding_scale'])}"
+        )
+
     amount = len(seeds)*len(intros)*len(beauties)*len(objects)*len(styles)*len(manipulations)*len(scale_values)*len(steps)*len(cfg)
     print(f"Images to generate: {amount}")
     
@@ -298,8 +314,90 @@ def run_embedding_interpolation(
         h=h
     )
 
+def run_token_weighting(
+    token_spans,
+    weight_values,
+    pipe,
+    folder_name,
+
+    rows="manipulation_type",
+    cols="manipulation_value",
+    num_cols=NUM_COLS,
+
+    seed_lines=[510891975915924], seed_selector=[1],
+
+    intro_lines=["a portrait of a"], intro_selector=[1],
+    beauty_lines=["beautiful"], beauty_selector=[3],
+    object_lines=["person"], object_selector=[1],
+    style_lines=["professional photography"], style_selector=[1],
+
+    steps=GEN_STEPS,
+    cfg=GEN_CFG,
+    negative_prompt=NEGATIVE_PROMPT,
+    w=WIDTH,
+    h=HEIGHT
+):
+
+    folder = f"{OUTPUT_DIR}/{folder_name}"
+    Path(folder).mkdir(parents=True, exist_ok=True)
+
+    seeds, intros, beauties, objects, styles, _ = prepare_context(
+        seed_lines, seed_selector,
+        intro_lines, intro_selector,
+        beauty_lines, beauty_selector,
+        object_lines, object_selector,
+        style_lines, style_selector,
+        manipulation_type=[], manipulation_indices=None
+    )
+
+    amount = (
+        len(seeds)
+        * len(intros)
+        * len(beauties)
+        * len(objects)
+        * len(styles)
+        * len(token_spans)
+        * len(weight_values)
+        * len(steps)
+        * len(cfg)
+    )
+
+    print(f"Images to generate: {amount}")
+
+    batch_generate_token_weighting(
+        token_spans,
+        weight_values,
+        folder,
+        pipe,
+        steps,
+        cfg,
+        seeds,
+        intros,
+        beauties,
+        objects,
+        styles,
+        amount,
+        negative_prompt,
+        w,
+        h
+    )
+
+    # grid + report
+    get_grid(
+        folder,
+        rows, cols, num_cols,
+        seeds, intros, beauties, objects, styles,
+        amount,
+        negative_prompt,
+        manipulations=[(6,"token_weight")],
+        scale_values=weight_values,
+        steps=steps, cfg=cfg,
+        w=w, h=h
+    )
+
+
 # --------------------------------------------------
-# big batches
+# RUN sets (more a log of past generating)
 # --------------------------------------------------
 
 def run_260334_test_all():
@@ -420,6 +518,21 @@ def run_embedding_deepdive (
                 seed_lines=seeds_all, seed_selector=[s_i]
             )
 
+def test_token_weighting():
+    token_spans = [
+        (1, 0, 10),   # intro
+        (2, 10, 20),  # beauty
+        (3, 20, 30),  # object
+    ]
+
+    weights = np.linspace(-1, 3, 50).tolist()
+
+    run_token_weighting(
+        token_spans,
+        weights,
+        pipe,
+        "token_weight_intro_beauty_object"
+    )
 
 
 # --------------------------------------------------
@@ -448,14 +561,15 @@ if __name__ == "__main__":
         "beauty", #2
         "object", #3
         "style", #4
-        "manipulation_type", #5 (we don't do that here)
-        "manipulation_value", #6 (we don't do that here)
+        "manipulation_type", #5
+        "manipulation_value", #6
         "steps", #7 
         "cfg" #8
     ]
     
     #run_compare_scaling()
-    run_embedding_deepdive ()
+    #run_embedding_deepdive ()
+    test_token_weighting()
 
     shutil.make_archive(OUTPUT_DIR, 'zip', OUTPUT_DIR)
     print(f"✅ Zip created: {OUTPUT_DIR}.zip")

@@ -10,8 +10,6 @@ outputs/
 *.zip
 
 # Local Configs
-config_local.py
-
 local/
 
 # Seeds / embeddings (optional)
