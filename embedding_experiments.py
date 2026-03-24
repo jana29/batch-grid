@@ -122,10 +122,7 @@ def batch_generate_embeddings(
                             for cfg in cfg_values:
                                  for i_m, manipulation in manipulation_types:
                                     for m in manipulation_values:
-
                                         count += 1
-                                        print(f"[{count}/{total}] {prompt}, seed={seed}, steps={steps}, cfg={cfg}")
-                                        print(f"manipulation: {manipulation} {m}")
 
                                         generator = torch.Generator("cuda").manual_seed(seed)
 
@@ -144,13 +141,24 @@ def batch_generate_embeddings(
 
                                         if i_m == 1:
                                             prompt_embeds = scale_embedding(prompt_embeds, m)
-
                                         elif i_m == 2:
                                             pooled = scale_pooled(pooled, m)
+                                        elif i_m == 4:
+                                            prompt_embeds = scale_embedding(prompt_embeds, m)
+                                            pooled = scale_pooled(pooled, m)
+                                        elif i_m == 3 or i_m > 4:
+                                            raise ValueError(
+                                                f"batch_generate_embeddings() can only do 'simple' embedding scaling\n"
+                                                f"therefore it only works with manipylation_type 1,2 or 4"
+                                                f"Selected manipylation_type = ({i_m}) {manipulation}\n"
+                                            )
 
                                         # (token weighting + interpolation later)
 
                                         # -------- diffusion --------
+
+                                        print(f"[{count}/{total}] {prompt}, seed={seed}, steps={steps}, cfg={cfg}")
+                                        print(f"manipulation: {manipulation} {m}")
 
                                         image = pipe(
                                             prompt_embeds=prompt_embeds,

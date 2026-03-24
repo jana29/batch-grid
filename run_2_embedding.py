@@ -298,42 +298,11 @@ def run_embedding_interpolation(
         h=h
     )
 
-    
-
-
-
 # --------------------------------------------------
-# ENTRY
+# big batches
 # --------------------------------------------------
 
-if __name__ == "__main__":
-    
-    seeds_all = load_seeds(SEEDS_PATH)
-    """
-    intro_lines_all = load_lines(INTRO_PATH)
-    beauty_lines_all = load_lines(BEAUTY_PATH)
-    object_lines_all = load_lines(OBJECT_PATH)
-    style_lines_all = load_lines(STYLE_PATH)
-    """
-
-    manipulation_type_lines_all = load_lines(MANIPULATION_TYPE_PATH)
-    print("values from files are ready")
-    
-    pipe = load_pipeline()
-    print("Pipeline ready")
-
-    focus = [
-        "seed", #0
-        "intro", #1
-        "beauty", #2
-        "object", #3
-        "style", #4
-        "manipulation_type", #5 (we don't do that here)
-        "manipulation_value", #6 (we don't do that here)
-        "steps", #7 
-        "cfg" #8
-    ]
-    
+def run_260334_test_all():
     # default settings: 
     # "a portrait of a beautiful person, professional photography", seed: 510891975915924, GEN_STEPS,GEN_GUIDANCESCALE,NEGATIVE_PROMPT
     MANIPULATION_SCALE_VALUES = np.linspace(-1, 3, 10).tolist()
@@ -384,7 +353,7 @@ if __name__ == "__main__":
     )
     
     #--------------------------------------
-    """
+    
     # interpolate w 10 values
     t_vals=np.linspace(0, 1, 100).tolist()
     run_embedding_interpolation(
@@ -399,7 +368,70 @@ if __name__ == "__main__":
         pipe,
         "100_interpols_-0.5-1.5",
         seed_lines=seeds_all, seed_selector=[10]
-    )"""
+    )
+
+def run_compare_scaling():
+    MANIPULATION_SCALE_VALUES = np.linspace(-1, 3.5, 10).tolist()
+    #MANIPULATION_SCALE_VALUES = [-1, -0.5, 0, 0.5, 1, 1.5, 2, 2.5, 3, 3.5]
+
+    # compare scaling of emb / pooled emb 
+    # "a portrait of a beautiful person, professional photography", seed: 510891975915924, GEN_STEPS,GEN_GUIDANCESCALE,NEGATIVE_PROMPT
+    run_embedding_scale(
+        manipulation_type_lines_all, [1, 2, 4],
+        MANIPULATION_SCALE_VALUES,
+        pipe,
+        "mani_type_x_scales",
+        seed_lines=seeds_all, seed_selector=[20]
+    )
+
+    # 10 seeds x emb_scaled
+    # "a portrait of a beautiful person, professional photography", GEN_STEPS,GEN_GUIDANCESCALE,NEGATIVE_PROMPT
+    run_embedding_scale(
+        manipulation_type_lines_all, [1],
+        MANIPULATION_SCALE_VALUES,
+        pipe,
+        "10_seeds_x_mani1-scales_1",
+        rows="seed", cols="manipulation_value",     # grid a x b (focus variables)
+
+        seed_lines=seeds_all, seed_selector=range(9,100+1, 10)
+    )
+
+
+
+
+# --------------------------------------------------
+# ENTRY
+# --------------------------------------------------
+
+if __name__ == "__main__":
+    
+    seeds_all = load_seeds(SEEDS_PATH)
+    """
+    intro_lines_all = load_lines(INTRO_PATH)
+    beauty_lines_all = load_lines(BEAUTY_PATH)
+    object_lines_all = load_lines(OBJECT_PATH)
+    style_lines_all = load_lines(STYLE_PATH)
+    """
+
+    manipulation_type_lines_all = load_lines(MANIPULATION_TYPE_PATH)
+    print("values from files are ready")
+    
+    pipe = load_pipeline()
+    print("Pipeline ready")
+
+    focus = [
+        "seed", #0
+        "intro", #1
+        "beauty", #2
+        "object", #3
+        "style", #4
+        "manipulation_type", #5 (we don't do that here)
+        "manipulation_value", #6 (we don't do that here)
+        "steps", #7 
+        "cfg" #8
+    ]
+    
+    run_compare_scaling()
 
     shutil.make_archive(OUTPUT_DIR, 'zip', OUTPUT_DIR)
     print(f"✅ Zip created: {OUTPUT_DIR}.zip")
