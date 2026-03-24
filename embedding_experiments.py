@@ -168,5 +168,104 @@ def batch_generate_embeddings(
 
                                         image.save(os.path.join(output_dir, filename))
 
+# -----------------------------------------
+# interpolate
+# -----------------------------------------
+def batch_generate_interpolation(
+    t_values,
+    output_dir,
+    pipe=None,
+
+    step_values=[30],
+    cfg_values=[8],
+    seeds=[0],
+
+    intros=[(1,"a portrait of a")],
+    beauties=[(1,"beautiful"), (2,"ugly")],
+    objects=[(1,"person")],
+    styles=[(1,"cinematic")],
+
+    total,
+
+    negative_prompt="watermark",
+    w=512, h=744,
+):
+    if pipe is None:
+        pipe = load_pipeline()
+
+    os.makedirs(output_dir, exist_ok=True)
+
+    embed_infos = []
+    filename_prompt="0_0_0_0"
+    for i_i, intro in intros:
+            for i_b, beauty in beauties:
+                for i_o, obj in objects:
+                    for i_s, style in styles:
+                        prompt = f"{intro} {beauty} {obj}, {style}"
+                        emb = encode_prompt(pipe, prompt, negative_prompt)
+
+                        embed_infos.append((emb, i_i, i_b, i_o, i_s))
+    if len(embed_infos)!=2:
+        raise ValueError(
+            "Interpolation requires exactly 2 prompts.\n"
+            f"Got {len(embeds)} prompts from component lengths:\n"
+            f"intros={len(intros)}, beauties={len(beauties)}, "
+            f"objects={len(objects)}, styles={len(styles)}\n"
+        )
+    (embA, i_i0, i_b0, i_o0, i_s0) = embed_infos[0]
+    (embB, i_i1, i_b1, i_o1, i_s1) = embed_infos[1]
+    def pair_str(a,b):
+        return f"{a},{b}" if a != b else str(a)
+    filename_prompt = (
+        f"{pair_str(i_i0,i_i1)}_{pair_str(i_b0,i_b1)}_{pair_str(i_o0,i_o1)}_{pair_str(i_s0,i_s1)}"
+    )
+
+    embA, embB = embeds
+
+    (pA, nA, poolA, npoolA) = embA
+    (pB, _, poolB, _) = embB
+
+    # clone once to avoid mutation side effects
+    pA = pA.clone()
+    pB = pB.clone()
+    poolA = poolA.clone()
+    poolB = poolB.clone()
+
+    if total == 0:
+        total = len(seeds)*len(step_values)*len(cfg_values)*len(t_values)
+    count = 0
+    for seed in seeds:
+        for steps in step_values:
+            for cfg in cfg_values:
+                for t in t_values:
+
+                    count += 1
+                    print(f"[{count}/{total}] seed={seed} t={t}")
+
+                    (pA, nA, poolA, npoolA) = embA
+                    (pB, _, poolB, _) = embB
+
+                    prompt_embeds = interpolate_embeddings(pA, pB, t)
+                    pooled = interpolate_embeddings(poolA, poolB, t)
+
+                    generator = torch.Generator("cuda").manual_seed(seed)
+
+                    image = pipe(
+                        prompt_embeds=prompt_embeds,
+                        negative_prompt_embeds=nA,
+                        pooled_prompt_embeds=pooled,
+                        negative_pooled_prompt_embeds=npoolA,
+                        num_inference_steps=steps,
+                        guidance_scale=cfg,
+                        width=w,
+                        height=h,
+                        generator=generator,
+                    ).images[0]
+
+                    filename = f"{seed}_{filename_prompt}_3_{t}_{steps}_{cfg}.png"
+                    image.save(os.path.join(output_dir, filename))
+
+    print("✅ interpolation batch finished")
+
 if __name__ == "__main__":
     print("Run this file through run_2_embedding.py")

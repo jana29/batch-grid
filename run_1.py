@@ -76,7 +76,7 @@ def select_lines(lines, selector):
 def select_seeds(seeds, selector):
     if selector is None:
         return seeds
-    return [seeds[i] for i in selector if i < len(seeds)]
+    return [seeds[i-1] for i in selector if i-1 < len(seeds)]
 
 
 # =======================================================================
@@ -201,7 +201,6 @@ if __name__ == "__main__":
         "cfg" #8
     ]
 
-    """
     # 100 seeds,
     # a portrait of a beautiful person, professional photography
     run(
@@ -219,7 +218,7 @@ if __name__ == "__main__":
         "100_seeds" #Folder Name
     )
 
-    # 10 seeds, 10 beauties
+    # 10 seeds, 10 beauties : beautiful, ugly in semantic scales
     run(
         focus[0], focus[2],   #  ↓ x → / rows, cols : seed x beauty
 
@@ -234,7 +233,22 @@ if __name__ == "__main__":
 
         "beauty_x_seeds" #Folder Name
     )
-    """
+    
+    # 10 seeds, 10 beauties : words without semantic scaling
+    run(
+        focus[0], focus[2],   #  ↓ x → / rows, cols : seed x beauty
+
+        seeds_all, range(10,100+1, 10), # range 10,20,30,...
+
+        intro_lines_all, [1],
+        beauty_lines_all, [3,8,13,18,22,24,25,26,27,28], # range 1-10
+        object_lines_all, [1],
+        style_lines_all, [1],
+
+        pipeline,
+
+        "beauty_x_seeds" #Folder Name
+    )
 
     # cfg x steps test
     run(
@@ -250,8 +264,26 @@ if __name__ == "__main__":
         pipeline,
 
         "steps_x_cfg", #Folder Name
-        [10, 20], #steps
-        [4, 6, 8] #cfg
+        range(4,40+1, 4), #steps
+        range(2,20+1, 2) #cfg
+    )
+
+    # beauty x steps
+    run(
+        focus[2], focus[8],   # ↓ x → / rows, cols: steps x cfg
+
+        seeds_all, [1], 
+
+        intro_lines_all, [1],
+        beauty_lines_all, [3,8,13,18,22,24,25,26,27,28], 
+        object_lines_all, [1],
+        style_lines_all, [1],
+
+        pipeline,
+
+        "beauty_x_cfg", #Folder Name
+        #range(4,40+1, 4), #steps
+        cfg=range(2,20+1, 2) #cfg
     )
 
     # --- zip folder ---

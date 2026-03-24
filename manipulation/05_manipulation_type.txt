@@ -1,2 +1,3 @@
 embedding scaled *
 pooled embedding scaled *
+interpolate embeddins (0/1)

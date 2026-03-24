@@ -247,7 +247,7 @@ def write_run_report(
                 vals=sorted(axis_map.get(row_axis, []))
                 parameter=row_axis
             
-            num_rows = math.ceil(len(vals) / num_cols)
+            num_rows = ceil(len(vals) / num_cols)
             f.write(f"{parameter} in {num_cols}x{num_rows} grid")
 
             for i, v in enumerate(vals):

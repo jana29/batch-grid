@@ -2,7 +2,7 @@ import shutil
 from datetime import datetime
 from pathlib import Path
 
-from embedding_experiments import load_pipeline, batch_generate_embeddings
+from embedding_experiments import load_pipeline, batch_generate_embeddings, batch_generate_interpolation
 from create_grid import *
 
 import numpy as np
@@ -72,40 +72,14 @@ def select_seeds(seeds, selector):
         return [seeds[0]]
     return [seeds[i-1] for i in selector if i-1 < len(seeds)]
 
-
-# --------------------------------------------------
-# MAIN RUN FUNCTION
-# --------------------------------------------------
-
-def run_embedding_scale(
+def prepare_context(
+    seed_lines, seed_selector,
+    intro_lines, intro_selector,
+    beauty_lines, beauty_selector,
+    object_lines, object_selector,
+    style_lines, style_selector,
     manipulation_type, manipulation_indices,
-    scale_values,
-
-    pipe,
-    folder_name,
-
-    rows="manipulation_type", cols="manipulation_value",     # grid a x b (focus variables)
-    num_cols=NUM_COLS,
-
-    seed_lines=[510891975915924], seed_selector=[1],
-
-    intro_lines=["a portrait of a"], intro_selector=[1],
-    beauty_lines=["beautiful"], beauty_selector=[3],
-    object_lines=["person"], object_selector=[1],
-    style_lines=["professional photography"], style_selector=[1],
-
-    steps=GEN_STEPS, cfg=GEN_CFG,
-
-    negative_prompt=NEGATIVE_PROMPT,
-    w=WIDTH,
-    h=HEIGHT
 ):
-
-    folder = f"{OUTPUT_DIR}/{folder_name}"
-    #Path(folder).mkdir(parents=True, exist_ok=True)
-    print(f"\nGenerating to folder: {folder_name}")
-    print(f"focus: {rows} x {cols}")
-
     seeds = select_seeds(seed_lines, seed_selector)
     intros = select_lines(intro_lines, intro_selector)
     beauties = select_lines(beauty_lines, beauty_selector)
@@ -113,38 +87,22 @@ def run_embedding_scale(
     styles = select_lines(style_lines, style_selector)
     manipulations = select_lines(manipulation_type, manipulation_indices)
 
-    amount = len(seeds)*len(intros)*len(beauties)*len(objects)*len(styles)*len(manipulations)*len(scale_values)*len(steps)*len(cfg)
-    print(f"Images to generate: {amount}")
-    
-    print(f"  seeds: {len(seeds)}")
-    print(f"  intros: {len(intros)}, beauties: {len(beauties)}, objects: {len(objects)}, styles: {len(styles)}")
-    print(f"  manipulations: {len(manipulations)}, scale_values: {len(scale_values)}")
-    print(f"  steps: {len(steps)}, cfg: {len(cfg)}")
+    return seeds, intros, beauties, objects, styles, manipulations
 
-    batch_generate_embeddings(
-        manipulations,
-        scale_values,
+# --------------------------------------------------
+# save image grids + info files
+# --------------------------------------------------
 
-        folder,
-        pipe,
-
-        steps, cfg,
-
-        seeds,
-        intros,
-        beauties,
-        objects,
-        styles,
-
-        amount,
-
-        negative_prompt,
-        w,
-        h
-    )
-    print(f"✅ {amount}/{amount} files generated")
-
-    # ----------- generate grid -------------
+def get_grid(
+    folder,
+    rows, cols, num_cols,
+    seeds, intros, beauties, objects, styles,
+    amount,
+    negative_prompt,
+    manipulations, scale_values,
+    steps, cfg,
+    w, h
+):
     if rows is None:
         generate_linear_grid(
             folder,
@@ -177,7 +135,162 @@ def run_embedding_scale(
         steps, cfg,
         w, h
     )
+
+
+# --------------------------------------------------
+# MAIN RUN FUNCTION
+# --------------------------------------------------
+
+def run_embedding_scale(
+    manipulation_type, manipulation_indices,
+    scale_values,
+
+    pipe,
+    folder_name,
+
+    rows="manipulation_type", cols="manipulation_value",     # grid a x b (focus variables)
+    num_cols=NUM_COLS,
+
+    seed_lines=[510891975915924], seed_selector=[1],
+
+    intro_lines=["a portrait of a"], intro_selector=[1],
+    beauty_lines=["beautiful"], beauty_selector=[3],
+    object_lines=["person"], object_selector=[1],
+    style_lines=["professional photography"], style_selector=[1],
+
+    steps=GEN_STEPS, cfg=GEN_CFG,
+
+    negative_prompt=NEGATIVE_PROMPT,
+    w=WIDTH,
+    h=HEIGHT
+):
+
+    folder = f"{OUTPUT_DIR}/{folder_name}"
+    Path(folder).mkdir(parents=True, exist_ok=True)
+    print(f"\nGenerating to folder: {folder_name}")
+    print(f"focus: {rows} x {cols}")
+
+    seeds, intros, beauties, objects, styles, manipulations = prepare_context(
+        seed_lines, seed_selector,
+        intro_lines, intro_selector, beauty_lines, beauty_selector, object_lines, object_selector, style_lines, style_selector,
+        manipulation_type, manipulation_indices,
+    )
+    amount = len(seeds)*len(intros)*len(beauties)*len(objects)*len(styles)*len(manipulations)*len(scale_values)*len(steps)*len(cfg)
+    print(f"Images to generate: {amount}")
     
+
+    batch_generate_embeddings(
+        manipulations,
+        scale_values,
+
+        folder,
+        pipe,
+
+        steps, cfg,
+
+        seeds,
+        intros, beauties, objects, styles,
+
+        amount,
+
+        negative_prompt,
+        w,h
+    )
+    print(f"✅ {amount}/{amount} files generated")
+
+    # ----------- generate grid -------------
+    get_grid(
+        folder,
+        rows, cols, num_cols,
+        seeds, intros, beauties, objects, styles,
+        amount,
+        negative_prompt,
+        manipulations, scale_values,
+        steps, cfg,
+        w, h
+    )
+
+
+# --------------------------------------
+# interpolation
+# --------------------------------------
+def run_embedding_interpolation(
+    t_values,
+    pipe,
+    folder_name,
+
+    rows=None,
+    cols="manipulation_value",
+    num_cols=NUM_COLS,
+
+    seed_lines=[510891975915924], seed_selector=[1],
+
+    intro_lines=["a portrait of a"], intro_selector=[1],
+    beauty_lines=["beautiful","ugly"], beauty_selector=[3,8],
+    object_lines=["person"], object_selector=[1],
+    style_lines=["professional photography"], style_selector=[1],
+
+    steps=GEN_STEPS, cfg=GEN_CFG,
+    negative_prompt=NEGATIVE_PROMPT,
+    w=WIDTH, h=HEIGHT
+):
+
+    folder = f"{OUTPUT_DIR}/{folder_name}"
+    Path(folder).mkdir(parents=True, exist_ok=True)
+
+    print(f"\nGenerating interpolation → {folder_name}")
+    print(f"focus: {rows} x {cols}")
+
+    # get lists for seeds, intros, beauties, objects, styles
+    seeds, intros, beauties, objects, styles, _ = prepare_context(
+        seed_lines, seed_selector,
+        intro_lines, intro_selector,
+        beauty_lines, beauty_selector,
+        object_lines, object_selector,
+        style_lines, style_selector,
+        manipulation_type=[], manipulation_indices=None   # not used
+    )
+
+    amount = len(seeds)*len(t_values)*len(steps)*len(cfg)
+
+    print(f"Images to generate: {amount}")
+
+    # ---------- renderer ----------
+    batch_generate_interpolation(
+        t_values,
+        folder,
+        pipe,
+
+        steps,
+        cfg,
+        seeds,
+
+        intros,
+        beauties,
+        objects,
+        styles,
+
+        amount,
+
+        negative_prompt,
+        w, h
+    )
+    print(f"✅ {amount}/{amount} files generated")
+
+    # ---------- grid ----------
+    get_grid(
+        folder,
+        rows, cols, num_cols,
+        seeds, intros, beauties, objects, styles,
+        amount,
+        negative_prompt,
+        manipulations=[(3,"interpolation")],
+        scale_values=t_values,
+        steps=steps,
+        cfg=cfg,
+        w=w,
+        h=h
+    )
 
     
 
@@ -214,7 +327,7 @@ if __name__ == "__main__":
         "steps", #7 
         "cfg" #8
     ]
-
+    """
     # default settings: 
     # "a portrait of a beautiful person, professional photography", seed: 510891975915924, GEN_STEPS,GEN_GUIDANCESCALE,NEGATIVE_PROMPT
     run_embedding_scale(
@@ -227,10 +340,10 @@ if __name__ == "__main__":
 
     # 10 seeds x emb_scaled
     # "a portrait of a beautiful person, professional photography", GEN_STEPS,GEN_GUIDANCESCALE,NEGATIVE_PROMPT
-    scale_values = np.linspace(-2, 2, 10).tolist()
+    MANIPULATION_SCALE_VALUES = np.linspace(-1, 3, 10).tolist()
     run_embedding_scale(
         manipulation_type_lines_all, [1],
-        scale_values,
+        MANIPULATION_SCALE_VALUES,
         pipe,
         "10_seeds_x_mani1-scales",
         rows="seed", cols="manipulation_value",     # grid a x b (focus variables)
@@ -239,10 +352,10 @@ if __name__ == "__main__":
     )
     # 100 scales
     # "a portrait of a beautiful person, professional photography", GEN_STEPS,GEN_GUIDANCESCALE,NEGATIVE_PROMPT
-    scale_values = np.linspace(-2, 2, 100).tolist()
+    MANIPULATION_SCALE_VALUES = np.linspace(-1, 3, 100).tolist()
     run_embedding_scale(
         manipulation_type_lines_all, [1],
-        scale_values,
+        MANIPULATION_SCALE_VALUES,
         pipe,
         "100_mani1-scales",
         rows=None, cols="manipulation_value",     # grid a x b (focus variables)
@@ -250,7 +363,7 @@ if __name__ == "__main__":
 
         seed_lines=seeds_all, seed_selector=[10]
     )
-    """
+    
     run_embedding_scale(
         manipulation_type_lines_all, [1],
         MANIPULATION_SCALE_VALUES,
@@ -267,5 +380,13 @@ if __name__ == "__main__":
         style_lines=["professional photography"], style_selector=[1],
     )
     """
+    # interpolate w 10 values
+    t_vals=np.linspace(0, 1, 100).tolist()
+    run_embedding_interpolation(
+        t_vals,
+        pipe,
+        "10_interpols"
+    )
+
     shutil.make_archive(OUTPUT_DIR, 'zip', OUTPUT_DIR)
     print(f"✅ Zip created: {OUTPUT_DIR}.zip")
