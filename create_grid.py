@@ -14,6 +14,9 @@ def parse_axis(x):
         return x   # keep string for interpolation axes
     return int(x)
 
+def parse_float(x):
+    return float(x.replace("p","."))
+
 def parse_filename(fname):
     """
     Extract experiment indices from filename.
@@ -30,11 +33,12 @@ def parse_filename(fname):
             "object": parse_axis(parts[3]),
             "style": parse_axis(parts[4]),
             "manipulation_type": int(parts[5]),
-            "manipulation_value": float(parts[6]),
+            "manipulation_value": parse_float(parts[6]),
             "steps": int(parts[7]),
             "cfg": float(parts[8]),
         }
-    except:
+    except Exception as e:
+        print("Parse fail:", fname, e)
         return None
 
 
