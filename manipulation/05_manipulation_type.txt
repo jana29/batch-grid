@@ -3,3 +3,4 @@ pooled embedding scaled *
 interpolate embeddins (0/1)
 token and pooled embedding scaled *
 interpolate token & pooled embeddings (0,max/max,0)
+token weight
