@@ -2,7 +2,7 @@ import shutil
 from datetime import datetime
 from pathlib import Path
 
-from embedding_experiments import load_pipeline, batch_generate_embeddings
+#from embedding_experiments import load_pipeline, batch_generate_embeddings
 from create_grid import *
 
 import numpy as np
@@ -102,7 +102,9 @@ def run_embedding_scale(
 ):
 
     folder = f"{OUTPUT_DIR}/{folder_name}"
-    Path(folder).mkdir(parents=True, exist_ok=True)
+    #Path(folder).mkdir(parents=True, exist_ok=True)
+    print(f"Generating to folder: {folder_name}")
+    print(f"focus: {rows} x {cols}")
 
     seeds_all = select_seeds(seeds, seed_selector)
     intros = select_lines(intro_lines, intro_selector)
@@ -113,7 +115,18 @@ def run_embedding_scale(
 
     amount = len(seeds)*len(intros)*len(beauties)*len(objects)*len(styles)*len(manipulations)*len(scale_values)*len(steps)*len(cfg)
     print(f"Images to generate: {amount}")
+    
+    print(f"seeds: {len(seeds)}")
+    print(f"intros: {len(intros)}")
+    print(f"beauties: {len(beauties)}")
+    print(f"objects: {len(objects)}")
+    print(f"styles: {len(styles)}")
+    print(f"manipulations: {len(manipulations)}")
+    print(f"scale_values: {len(scale_values)}")
+    print(f"steps: {len(steps)}")
+    print(f"cfg: {len(cfg)}")
 
+    """
     batch_generate_embeddings(
         manipulations,
         scale_values,
@@ -170,6 +183,7 @@ def run_embedding_scale(
         steps, cfg,
         w, h
     )
+    """
 
     
 
@@ -234,7 +248,7 @@ if __name__ == "__main__":
         manipulation_type_lines_all, [1],
         np.arange(-2.0, 2.1, (2.0-(-2.0)/100)),
         pipe,
-        "10_seeds_x_mani1-scales",
+        "100_mani1-scales",
         rows=None, cols="manipulation_value",     # grid a x b (focus variables)
         num_cols=10,
 
