@@ -2,7 +2,7 @@ import shutil
 from datetime import datetime
 from pathlib import Path
 
-#from embedding_experiments import load_pipeline, batch_generate_embeddings
+from embedding_experiments import load_pipeline, batch_generate_embeddings
 from create_grid import *
 
 import numpy as np
