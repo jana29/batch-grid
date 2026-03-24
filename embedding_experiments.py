@@ -146,12 +146,6 @@ def batch_generate_embeddings(
                                         elif i_m == 4:
                                             prompt_embeds = scale_embedding(prompt_embeds, m)
                                             pooled = scale_pooled(pooled, m)
-                                        """
-                                        elif i_m == 5:
-                                            interpolated_scale=manipulation_values[len(manipulation_values)-1]-m
-                                            prompt_embeds = scale_embedding(prompt_embeds, m)
-                                            pooled = scale_pooled(pooled, interpolated_scale)
-                                        """
                                         else:
                                             raise ValueError(
                                                 f"batch_generate_embeddings() can only do 'simple' embedding scaling\n"
@@ -293,3 +287,97 @@ def batch_generate_interpolation(
 
 if __name__ == "__main__":
     print("Run this file through run_2_embedding.py")
+
+
+
+# --------------------------------------------------
+# Token weighting batch
+# --------------------------------------------------
+
+def batch_generate_token_weighting(
+    token_spans,          # [(span_id, start, end)]
+    weight_values,
+
+    output_dir,
+    pipe=None,
+
+    step_values=[30],
+    cfg_values=[8],
+    seeds=[0],
+
+    intros=[(1,"a portrait of a")],
+    beauties=[(3,"beautiful")],
+    objects=[(1,"person")],
+    styles=[(1,"professional photography")],
+
+    total=0,
+
+    negative_prompt="watermark",
+    w=512, h=744,
+):
+
+    if pipe is None:
+        pipe = load_pipeline()
+
+    os.makedirs(output_dir, exist_ok=True)
+
+    count = 0
+
+    for seed in seeds:
+        for i_i, intro in intros:
+            for i_b, beauty in beauties:
+                for i_o, obj in objects:
+                    for i_s, style in styles:
+
+                        prompt = f"{intro} {beauty} {obj}, {style}"
+
+                        base = encode_prompt(pipe, prompt, negative_prompt)
+
+                        for steps in step_values:
+                            for cfg in cfg_values:
+                                for span_id, start, end in token_spans:
+                                    for w_val in weight_values:
+
+                                        count += 1
+
+                                        generator = torch.Generator("cuda").manual_seed(seed)
+
+                                        (
+                                            prompt_embeds,
+                                            negative_embeds,
+                                            pooled,
+                                            negative_pooled,
+                                        ) = base
+
+                                        # clone safety
+                                        prompt_embeds = prompt_embeds.clone()
+                                        pooled = pooled.clone()
+
+                                        # ---- apply token span weighting ----
+                                        prompt_embeds[:, start:end] *= w_val
+
+                                        print(
+                                            f"[{count}/{total}] seed={seed} "
+                                            f"span={span_id} weight={w_val}"
+                                        )
+
+                                        image = pipe(
+                                            prompt_embeds=prompt_embeds,
+                                            negative_prompt_embeds=negative_embeds,
+                                            pooled_prompt_embeds=pooled,
+                                            negative_pooled_prompt_embeds=negative_pooled,
+                                            num_inference_steps=steps,
+                                            guidance_scale=cfg,
+                                            width=w,
+                                            height=h,
+                                            generator=generator,
+                                        ).images[0]
+
+                                        filename = (
+                                            f"{seed}_{i_i}_{i_b}_{i_o}_{i_s}_"
+                                            f"6_{span_id}-{w_val}_{steps}_{cfg}.png"
+                                        )
+
+                                        image.save(os.path.join(output_dir, filename))
+
+    print("✅ token weighting batch finished")
