@@ -228,7 +228,7 @@ if __name__ == "__main__":
         MANIPULATION_SCALE_VALUES,
         pipe,
         "mani_type_x_scales",
-        seeds=seeds_all, seed_selector=[10]
+        seed_lines=seeds_all, seed_selector=[10]
     )
 
     # 10 seeds x emb_scaled
@@ -240,7 +240,7 @@ if __name__ == "__main__":
         "10_seeds_x_mani1-scales",
         rows="seed", cols="manipulation_value",     # grid a x b (focus variables)
 
-        seeds=seeds_all, seed_selector=range(10,100+1, 10)
+        seed_lines=seeds_all, seed_selector=range(10,100+1, 10)
     )
     # 100 scales
     # "a portrait of a beautiful person, professional photography", GEN_STEPS,GEN_GUIDANCESCALE,NEGATIVE_PROMPT
@@ -253,7 +253,7 @@ if __name__ == "__main__":
         rows=None, cols="manipulation_value",     # grid a x b (focus variables)
         num_cols=10,
 
-        seeds=seeds_all, seed_selector=[10]
+        seed_lines=seeds_all, seed_selector=[10]
     )
     """
     run_embedding_scale(
