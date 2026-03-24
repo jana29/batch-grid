@@ -387,7 +387,7 @@ if __name__ == "__main__":
     )
     """
     # interpolate w 10 values
-    t_vals=np.linspace(0, 1, 100).tolist()
+    t_vals=np.linspace(0, 1, 10).tolist()
     run_embedding_interpolation(
         t_vals,
         pipe,
