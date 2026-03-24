@@ -5,6 +5,8 @@ from pathlib import Path
 from embedding_experiments import load_pipeline, batch_generate_embeddings
 from create_grid import *
 
+import numpy as np
+
 # --- timestamp ---
 ts = datetime.now().strftime("%Y%m%d_%H%M%S")
 OUTPUT_DIR = f"./output/{ts}_run_2_embedding"
@@ -208,10 +210,10 @@ if __name__ == "__main__":
     # default settings: 
     # "a portrait of a beautiful person, professional photography", seed: 510891975915924, GEN_STEPS,GEN_GUIDANCESCALE,NEGATIVE_PROMPT
     run_embedding_scale(
-        manipulation_type_lines_all, [1, 2],
+        manipulation_type_lines_all, None,
         MANIPULATION_SCALE_VALUES,
         pipe,
-        "embedding_scale_test",
+        "mani_type_x_scales",
         seeds=seeds_all, seed_selector=[10]
     )
 
@@ -221,10 +223,22 @@ if __name__ == "__main__":
         manipulation_type_lines_all, [1],
         MANIPULATION_SCALE_VALUES,
         pipe,
-        "embedding_scale_test"
+        "10_seeds_x_mani1-scales",
         rows="seed", cols="manipulation_value",     # grid a x b (focus variables)
 
         seeds=seeds_all, seed_selector=range(10,100+1, 10)
+    )
+    # 100 scales
+    # "a portrait of a beautiful person, professional photography", GEN_STEPS,GEN_GUIDANCESCALE,NEGATIVE_PROMPT
+    run_embedding_scale(
+        manipulation_type_lines_all, [1],
+        np.arange(-2.0, 2.1, (2.0-(-2.0)/100)),
+        pipe,
+        "10_seeds_x_mani1-scales",
+        rows=None, cols="manipulation_value",     # grid a x b (focus variables)
+        num_cols=10,
+
+        seeds=seeds_all, seed_selector=[10]
     )
     """
     run_embedding_scale(
