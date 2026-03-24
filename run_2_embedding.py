@@ -69,8 +69,8 @@ def select_seeds(seeds, selector):
     if selector is None:
         return seeds
     if len(seeds)==1 and len(selector)==1:
-        return [(selector[0], lines[0])]
-    return [seeds[i] for i in selector if i < len(seeds)]
+        return [seeds[0]]
+    return [seeds[i-1] for i in selector if i-1 < len(seeds)]
 
 
 # --------------------------------------------------
@@ -87,7 +87,7 @@ def run_embedding_scale(
     rows="manipulation_type", cols="manipulation_value",     # grid a x b (focus variables)
     num_cols=NUM_COLS,
 
-    seeds=[510891975915924], seed_selector=[1],
+    seed_lines=[510891975915924], seed_selector=[1],
 
     intro_lines=["a portrait of a"], intro_selector=[1],
     beauty_lines=["beautiful"], beauty_selector=[3],
@@ -106,7 +106,7 @@ def run_embedding_scale(
     print(f"Generating to folder: {folder_name}")
     print(f"focus: {rows} x {cols}")
 
-    seeds_all = select_seeds(seeds, seed_selector)
+    seeds = select_seeds(seed_lines, seed_selector)
     intros = select_lines(intro_lines, intro_selector)
     beauties = select_lines(beauty_lines, beauty_selector)
     objects = select_lines(object_lines, object_selector)
@@ -244,9 +244,10 @@ if __name__ == "__main__":
     )
     # 100 scales
     # "a portrait of a beautiful person, professional photography", GEN_STEPS,GEN_GUIDANCESCALE,NEGATIVE_PROMPT
+    scale_values = np.linspace(-2, 2, 100).tolist()
     run_embedding_scale(
         manipulation_type_lines_all, [1],
-        np.arange(-2.0, 2.1, (2.0-(-2.0)/100)),
+        scale_values,
         pipe,
         "100_mani1-scales",
         rows=None, cols="manipulation_value",     # grid a x b (focus variables)
