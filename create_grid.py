@@ -216,7 +216,7 @@ def write_run_report(
             "object": [i for i,_ in objects],
             "style": [i for i,_ in styles],
             "manipulation_type": [i for i,_ in manipulation_types],
-            "manipulation_value": [manipulation],
+            "manipulation_value": manipulation,
             "steps": steps,
             "cfg": cfg,
         }

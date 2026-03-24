@@ -1,4 +1,32 @@
-#import os
+"""
+about embedding manipulation
+
+diffusion generation simplified, according to chatGPT:
+
+text → tokenizer → text encoder → prompt embeddings
+                                    ↓
+                        diffusion sampling loop
+                        (steps, cfg, scheduler, seed…)
+
+embeddings = conditioning signal
+steps / cfg = sampling process controls
+-> They act at different stages.
+
+⭐ What embeddings actually represent
+
+Embeddings encode:
+- semantic meaning
+- style direction
+- attribute strength
+- relationships between tokens
+
+Example:
+    embedding("beautiful person") - embedding("ugly person")
+→ “beauty direction” in latent space.
+
+"""
+
+
 import time
 import torch
 from itertools import product
@@ -19,17 +47,18 @@ def generate_embedding_scale_grid(
     output_dir,
     skip_existing=True,
 ):
-    #os.makedirs(output_dir, exist_ok=True)
 
-    total_images = len(product(beauty, objects, styles)) * len(seeds) * len(scales)
+    len_prompt_combos = len(product(beauty, objects, styles))
+    total_images = len_prompt_combos * len(seeds) * len(scales)
     print(f"\nEmbedding experiment")
-    print(f"Prompt combos: {len(prompt_combos)}")
+    print(f"Prompt combos: {len_prompt_combos}")
     print(f"Seeds: {len(seeds)}")
     print(f"Scales: {len(scales)}")
     print(f"TOTAL IMAGES: {total_images}\n")
 
     start_time = time.time()
     img_index = 0
+
 
     for combo_index, (b, o, s) in enumerate(product(beauty, objects, styles), 1):
 

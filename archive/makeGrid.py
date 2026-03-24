@@ -112,7 +112,7 @@ def generate_grid (
 
     with open(f"{folder}/grid.csv", "w", newline="", encoding="utf-8") as f:
         writer = csv.writer(f)
-        writer.writerows(csv_rows)
+        writer.writerows(csv_rows)c
     print(f"{len(csv_rows)} rows x {len(csv_rows[0])} cols")
     print(f"✅ grid table saved to {OUTPUT_DIR}")
 

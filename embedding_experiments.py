@@ -167,7 +167,6 @@ def batch_generate_embeddings(
                                         filename = f"{seed}_{i_i}_{i_b}_{i_o}_{i_s}_{i_m}_{m}_{steps}_{cfg}.png"
 
                                         image.save(os.path.join(output_dir, filename))
-    print(f"✅ {count}/{total} files generated")
 
 if __name__ == "__main__":
     print("Run this file through run_2_embedding.py")
