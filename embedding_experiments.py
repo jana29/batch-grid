@@ -208,7 +208,7 @@ def batch_generate_interpolation(
     if len(embed_infos)!=2:
         raise ValueError(
             "Interpolation requires exactly 2 prompts.\n"
-            f"Got {len(embeds)} prompts from component lengths:\n"
+            f"Got {len(embed_infos)} prompts from component lengths:\n"
             f"intros={len(intros)}, beauties={len(beauties)}, "
             f"objects={len(objects)}, styles={len(styles)}\n"
         )
