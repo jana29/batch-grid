@@ -333,7 +333,7 @@ if __name__ == "__main__":
         "steps", #7 
         "cfg" #8
     ]
-    """
+    
     # default settings: 
     # "a portrait of a beautiful person, professional photography", seed: 510891975915924, GEN_STEPS,GEN_GUIDANCESCALE,NEGATIVE_PROMPT
     MANIPULATION_SCALE_VALUES = np.linspace(-1, 3, 10).tolist()
@@ -399,7 +399,7 @@ if __name__ == "__main__":
         pipe,
         "100_interpols_-0.5-1.5",
         seed_lines=seeds_all, seed_selector=[10]
-    )
+    )"""
 
     shutil.make_archive(OUTPUT_DIR, 'zip', OUTPUT_DIR)
     print(f"✅ Zip created: {OUTPUT_DIR}.zip")
