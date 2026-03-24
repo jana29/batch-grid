@@ -216,20 +216,22 @@ def batch_generate_interpolation(
     (embB, i_i1, i_b1, i_o1, i_s1) = embed_infos[1]
     def pair_str(a,b):
         return f"{a},{b}" if a != b else str(a)
+    # get middle part of filename, e.g. 0_3,8_0_0
     filename_prompt = (
         f"{pair_str(i_i0,i_i1)}_{pair_str(i_b0,i_b1)}_{pair_str(i_o0,i_o1)}_{pair_str(i_s0,i_s1)}"
     )
 
-    embA, embB = embeds
-
     (pA, nA, poolA, npoolA) = embA
     (pB, _, poolB, _) = embB
 
-    # clone once to avoid mutation side effects
-    pA = pA.clone()
-    pB = pB.clone()
-    poolA = poolA.clone()
-    poolB = poolB.clone()
+    """
+    embed cloning outside of loop?
+        # clone once to avoid mutation side effects
+        pA = pA.clone()
+        pB = pB.clone()
+        poolA = poolA.clone()
+        poolB = poolB.clone()
+    """
 
     if total == 0:
         total = len(seeds)*len(step_values)*len(cfg_values)*len(t_values)
@@ -242,8 +244,12 @@ def batch_generate_interpolation(
                     count += 1
                     print(f"[{count}/{total}] seed={seed} t={t}")
 
-                    (pA, nA, poolA, npoolA) = embA
-                    (pB, _, poolB, _) = embB
+                    # --- fresh tensors every render ---
+                    pA = embA[0].clone()
+                    poolA = embA[2].clone()
+
+                    pB = embB[0].clone()
+                    poolB = embB[2].clone()
 
                     prompt_embeds = interpolate_embeddings(pA, pB, t)
                     pooled = interpolate_embeddings(poolA, poolB, t)

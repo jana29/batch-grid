@@ -44,28 +44,32 @@ def load_seeds(path):
     with open(path, "r") as f:
         return [int(line.strip()) for line in f if line.strip()]
 
+
 def select_lines(lines, selector):
+
+    # full sweep
     if selector is None:
-        return list(enumerate(lines, 1))
+        return [(i+1, line) for i, line in enumerate(lines)]
 
-    if len(lines)==1 and len(selector)==1:
-        return [(selector[0], lines[0])]
-    if len(lines)==2 and len(selector)==2:
-        return [(selector[0], lines[0]), (selector[1], lines[1])]
+    # --- label attachment fallback ---
+    # same length → treat selector as coordinate labels
+    if len(selector) == len(lines):
+        return list(zip(selector, lines))
 
-    if isinstance(selector, range):
-        return [(i, lines[i-1]) for i in selector if i-1 < len(lines)]
+    # --- true selection mode ---
+    selected = []
+    for coord in selector:
 
-    if isinstance(selector, list):
-        return [(i, lines[i-1]) for i in selector if i-1 < len(lines)]
+        idx = coord - 1
 
-    if isinstance(selector, slice):
-        start = selector.start or 1
-        stop = selector.stop or len(lines)+1
-        step = selector.step or 1
-        return [(i, lines[i-1]) for i in range(start, stop, step)]
+        if idx < 0 or idx >= len(lines):
+            raise ValueError(
+                f"Selector index {coord} out of range for list of length {len(lines)}"
+            )
 
-    raise ValueError("Unsupported selector")
+        selected.append((coord, lines[idx]))
+
+    return selected
 
 def select_seeds(seeds, selector):
     if selector is None:
