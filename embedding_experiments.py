@@ -185,7 +185,7 @@ def batch_generate_interpolation(
     objects=[(1,"person")],
     styles=[(1,"cinematic")],
 
-    total,
+    total=0,
 
     negative_prompt="watermark",
     w=512, h=744,
