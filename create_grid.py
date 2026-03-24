@@ -216,7 +216,7 @@ def write_run_report(
             "object": [i for i,_ in objects],
             "style": [i for i,_ in styles],
             "manipulation_type": [i for i,_ in manipulation_types],
-            "manipulation": [manipulation],
+            "manipulation_value": [manipulation],
             "steps": steps,
             "cfg": cfg,
         }
@@ -289,9 +289,9 @@ def write_run_report(
             f.write("MANIPULATION TYPE\n")
             for idx, text in manipulation_types:
                 f.write(f"  {idx}: {text}\n")
-                f.write("  MANIPULATION FACTOR\n")
+                f.write("     MANIPULATION FACTOR\n")
                 for m in manipulation:
-                    f.write(f"    {m}\n")
+                    f.write(f"       {m}\n")
             f.write("\n")
 
         # ---------- SAMPLING ----------

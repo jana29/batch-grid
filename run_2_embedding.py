@@ -17,7 +17,7 @@ OBJECT_PATH="prompt/03_object.txt"
 STYLE_PATH="prompt/04_style.txt"
 
 MANIPULATION_TYPE_PATH="manipulation/05_manipulation_type.txt"
-MANIPULATION_SCALE_VALUES=[0.5,0.75,1.0,1.25,1.5,1.75,2.0]
+MANIPULATION_SCALE_VALUES=[-1, -0.75,-0.5,-0.25, 0.0, 0.25,0.5,0.75, 1.0, 1.25,1.5,1.75, 2.0]
 
 NEGATIVE_PROMPT="watermark, text, picture frame, face card, multiple faces"
 
@@ -66,6 +66,8 @@ def select_lines(lines, selector):
 def select_seeds(seeds, selector):
     if selector is None:
         return seeds
+    if len(seeds)==1 and len(selector)==1:
+        return [(selector[0], lines[0])]
     return [seeds[i] for i in selector if i < len(seeds)]
 
 
@@ -83,7 +85,7 @@ def run_embedding_scale(
     rows="manipulation_type", cols="manipulation_value",     # grid a x b (focus variables)
     num_cols=NUM_COLS,
 
-    seeds=[510891975915924],
+    seeds=[510891975915924], seed_selector=[1],
 
     intro_lines=["a portrait of a"], intro_selector=[1],
     beauty_lines=["beautiful"], beauty_selector=[3],
@@ -100,6 +102,7 @@ def run_embedding_scale(
     folder = f"{OUTPUT_DIR}/{folder_name}"
     Path(folder).mkdir(parents=True, exist_ok=True)
 
+    seeds_all = select_seeds(seeds, seed_selector)
     intros = select_lines(intro_lines, intro_selector)
     beauties = select_lines(beauty_lines, beauty_selector)
     objects = select_lines(object_lines, object_selector)
@@ -130,6 +133,7 @@ def run_embedding_scale(
         w,
         h
     )
+    print(f"✅ {amount}/{amount} files generated")
 
     # ----------- generate grid -------------
     if rows is None:
@@ -174,8 +178,9 @@ def run_embedding_scale(
 # --------------------------------------------------
 
 if __name__ == "__main__":
-    """
+    
     seeds_all = load_seeds(SEEDS_PATH)
+    """
     intro_lines_all = load_lines(INTRO_PATH)
     beauty_lines_all = load_lines(BEAUTY_PATH)
     object_lines_all = load_lines(OBJECT_PATH)
@@ -206,7 +211,37 @@ if __name__ == "__main__":
         manipulation_type_lines_all, [1, 2],
         MANIPULATION_SCALE_VALUES,
         pipe,
-        "embedding_scale_test"
+        "embedding_scale_test",
+        seeds=seeds_all, seed_selector=[10]
     )
 
+    # 10 seeds x emb_scaled
+    # "a portrait of a beautiful person, professional photography", GEN_STEPS,GEN_GUIDANCESCALE,NEGATIVE_PROMPT
+    run_embedding_scale(
+        manipulation_type_lines_all, [1],
+        MANIPULATION_SCALE_VALUES,
+        pipe,
+        "embedding_scale_test"
+        rows="seed", cols="manipulation_value",     # grid a x b (focus variables)
+
+        seeds=seeds_all, seed_selector=range(10,100+1, 10)
+    )
+    """
+    run_embedding_scale(
+        manipulation_type_lines_all, [1],
+        MANIPULATION_SCALE_VALUES,
+        pipe,
+        "embedding_scale_test"
+        rows="seed", cols="manipulation_value",     # grid a x b (focus variables)
+        num_cols=NUM_COLS,
+
+        seeds=[510891975915924], seed_selector=[1],
+
+        intro_lines=["a portrait of a"], intro_selector=[1],
+        beauty_lines=["beautiful"], beauty_selector=[3],
+        object_lines=["person"], object_selector=[1],
+        style_lines=["professional photography"], style_selector=[1],
+    )
+    """
     shutil.make_archive(OUTPUT_DIR, 'zip', OUTPUT_DIR)
+    print(f"✅ Zip created: {OUTPUT_DIR}.zip")
