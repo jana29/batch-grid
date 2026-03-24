@@ -103,7 +103,7 @@ def run_embedding_scale(
 
     folder = f"{OUTPUT_DIR}/{folder_name}"
     #Path(folder).mkdir(parents=True, exist_ok=True)
-    print(f"Generating to folder: {folder_name}")
+    print(f"\nGenerating to folder: {folder_name}")
     print(f"focus: {rows} x {cols}")
 
     seeds = select_seeds(seed_lines, seed_selector)
@@ -116,17 +116,11 @@ def run_embedding_scale(
     amount = len(seeds)*len(intros)*len(beauties)*len(objects)*len(styles)*len(manipulations)*len(scale_values)*len(steps)*len(cfg)
     print(f"Images to generate: {amount}")
     
-    print(f"seeds: {len(seeds)}")
-    print(f"intros: {len(intros)}")
-    print(f"beauties: {len(beauties)}")
-    print(f"objects: {len(objects)}")
-    print(f"styles: {len(styles)}")
-    print(f"manipulations: {len(manipulations)}")
-    print(f"scale_values: {len(scale_values)}")
-    print(f"steps: {len(steps)}")
-    print(f"cfg: {len(cfg)}")
+    print(f"  seeds: {len(seeds)}")
+    print(f"  intros: {len(intros)}, beauties: {len(beauties)}, objects: {len(objects)}, styles: {len(styles)}")
+    print(f"  manipulations: {len(manipulations)}, scale_values: {len(scale_values)}")
+    print(f"  steps: {len(steps)}, cfg: {len(cfg)}")
 
-    """
     batch_generate_embeddings(
         manipulations,
         scale_values,
@@ -183,7 +177,7 @@ def run_embedding_scale(
         steps, cfg,
         w, h
     )
-    """
+    
 
     
 
@@ -233,9 +227,10 @@ if __name__ == "__main__":
 
     # 10 seeds x emb_scaled
     # "a portrait of a beautiful person, professional photography", GEN_STEPS,GEN_GUIDANCESCALE,NEGATIVE_PROMPT
+    scale_values = np.linspace(-2, 2, 10).tolist()
     run_embedding_scale(
         manipulation_type_lines_all, [1],
-        MANIPULATION_SCALE_VALUES,
+        scale_values,
         pipe,
         "10_seeds_x_mani1-scales",
         rows="seed", cols="manipulation_value",     # grid a x b (focus variables)
