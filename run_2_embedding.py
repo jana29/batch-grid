@@ -333,7 +333,7 @@ if __name__ == "__main__":
         "steps", #7 
         "cfg" #8
     ]
-    
+    """
     # default settings: 
     # "a portrait of a beautiful person, professional photography", seed: 510891975915924, GEN_STEPS,GEN_GUIDANCESCALE,NEGATIVE_PROMPT
     MANIPULATION_SCALE_VALUES = np.linspace(-1, 3, 10).tolist()
@@ -384,13 +384,13 @@ if __name__ == "__main__":
     )
     
     #--------------------------------------
-
+    """
     # interpolate w 10 values
     t_vals=np.linspace(0, 1, 100).tolist()
     run_embedding_interpolation(
         t_vals,
         pipe,
-        "100_interpols_0-1"
+        "100_interpols_0-1",
         seed_lines=seeds_all, seed_selector=[10]
     )
     t_vals=np.linspace(-0.5, 1.5, 100).tolist()
