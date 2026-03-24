@@ -5,7 +5,7 @@ from PIL import Image
 # CONFIG — change if needed
 # ------------------------------------------------------------
 
-FOLDER = "jana/batch-grid/output/20260324_155359_run_2_embedding/token_weight_intro_beauty_object"
+FOLDER = "output/20260324_155359_run_2_embedding/token_weight_intro_beauty_object"
 
 WIDTH = 512
 HEIGHT = 744
