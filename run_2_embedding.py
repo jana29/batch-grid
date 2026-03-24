@@ -51,7 +51,7 @@ def select_lines(lines, selector):
     if len(lines)==1 and len(selector)==1:
         return [(selector[0], lines[0])]
     if len(lines)==2 and len(selector)==2:
-        return [(selector[0], lines[0]), (selector[1], lines[2])]
+        return [(selector[0], lines[0]), (selector[1], lines[1])]
 
     if isinstance(selector, range):
         return [(i, lines[i-1]) for i in selector if i-1 < len(lines)]
