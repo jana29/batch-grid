@@ -9,6 +9,11 @@ from datetime import datetime
 # helpers
 # ------------------------------------------------------------
 
+def parse_axis(x):
+    if "," in x:
+        return x   # keep string for interpolation axes
+    return int(x)
+
 def parse_filename(fname):
     """
     Extract experiment indices from filename.
@@ -20,10 +25,6 @@ def parse_filename(fname):
     try:
         return {
             "seed": int(parts[0]),
-            def parse_axis(x):
-                if "," in x:
-                    return x   # keep string for interpolation axes
-                return int(x)
             "intro": parse_axis(parts[1]),
             "beauty": parse_axis(parts[2]),
             "object": parse_axis(parts[3]),
