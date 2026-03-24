@@ -396,6 +396,29 @@ def run_compare_scaling():
         seed_lines=seeds_all, seed_selector=range(9,100+1, 10)
     )
 
+# 100-scales-grids für range von seeds, manipulation types
+def run_embedding_deepdive (
+    manipulation_scale_values = np.linspace(0, 1.98, 100).tolist(),
+    seed_index=[39, 69],
+    manipulation_indices=[1,2,4]
+):
+    count=0
+    total=len(seed_index)*len(manipulation_indices)
+    for s_i in seed_index:
+        for m_i in manipulation_indices:
+            count+=1
+            print("#----------------------------------------------------------------------")
+            print(f"RUN {count}/{total}: seed #{s_i}, manipulation type #{m_i}")
+            run_embedding_scale(
+                manipulation_type_lines_all, [m_i],
+                manipulation_scale_values,
+                pipe,
+                "100_scales_m#{m_i}_seed#{s_i}",
+                rows=None, cols="manipulation_value",     # linear grid
+                num_cols=10,
+
+                seed_lines=seeds_all, seed_selector=[s_i]
+            )
 
 
 
@@ -431,7 +454,8 @@ if __name__ == "__main__":
         "cfg" #8
     ]
     
-    run_compare_scaling()
+    #run_compare_scaling()
+    run_embedding_deepdive ()
 
     shutil.make_archive(OUTPUT_DIR, 'zip', OUTPUT_DIR)
     print(f"✅ Zip created: {OUTPUT_DIR}.zip")
