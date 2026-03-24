@@ -1,184 +1,165 @@
 import os
 import csv
 from PIL import Image
-from math import ceil
-from datetime import datetime
 
 
 # ------------------------------------------------------------
-# helpers
+# CONFIG — adjust only this if needed
 # ------------------------------------------------------------
 
-def parse_axis(x):
-    if "," in x:
-        return x
-    return int(x)
+FOLDER = "output/20260324_155359_run_2_embedding/token_weight_intro_beauty_object"
+
+WIDTH = 512
+HEIGHT = 744
+THUMB_SCALE = 0.5
+
+ROUND_DECIMALS = 4   # VERY IMPORTANT for stable grid
 
 
-def parse_float(x):
+# ------------------------------------------------------------
+# PARSER
+# ------------------------------------------------------------
+
+def parse_token_weight_filename(fname):
     """
-    Supports:
-    - normal float: 1.25
-    - p-format: 1p25
-    - packed token-weight: 3--0.75
+    Expected filename format:
+
+    seed_intro_beauty_object_style_6_axis-weight_steps_cfg.png
     """
 
-    x = x.replace("p", ".")
-
-    # packed axis-weight
-    if "-" in x[1:]:
-        axis, rest = x.split("-", 1)
-
-        if x.count("--"):
-            rest = "-" + rest
-
-        try:
-            return round(float(rest), 6)
-        except:
-            pass
-
-    return round(float(x), 6)
-
-
-def parse_filename(fname):
     parts = fname.replace(".png", "").split("_")
 
     try:
+        seed = int(parts[0])
+        manipulation_type = int(parts[5])
+
+        packed = parts[6]
+
+        axis_str, rest = packed.split("-", 1)
+
+        if packed.count("--"):
+            weight = -float(rest)
+        else:
+            weight = float(rest)
+
+        axis = int(axis_str)
+
+        weight = round(weight, ROUND_DECIMALS)
+
         return {
-            "seed": int(parts[0]),
-            "intro": parse_axis(parts[1]),
-            "beauty": parse_axis(parts[2]),
-            "object": parse_axis(parts[3]),
-            "style": parse_axis(parts[4]),
-            "manipulation_type": int(parts[5]),
-            "manipulation_value": parse_float(parts[6]),
-            "steps": int(parts[7]),
-            "cfg": float(parts[8]),
+            "seed": seed,
+            "axis": axis,
+            "weight": weight,
+            "file": fname,
         }
+
     except Exception as e:
         print("Parse fail:", fname, e)
         return None
 
 
-def list_images(folder):
-    return [
-        f for f in os.listdir(folder)
-        if f.endswith(".png") and f.split("_")[0].isdigit()
-    ]
+# ------------------------------------------------------------
+# LOAD FILES
+# ------------------------------------------------------------
+
+if not os.path.exists(FOLDER):
+    raise FileNotFoundError(f"Folder not found: {FOLDER}")
+
+files = [
+    f for f in os.listdir(FOLDER)
+    if f.endswith(".png") and f.split("_")[0].isdigit()
+]
+
+meta = []
+
+for f in files:
+    m = parse_token_weight_filename(f)
+    if m:
+        meta.append(m)
+
+if not meta:
+    print("❌ No valid images parsed")
+    exit()
+
+print(f"✅ Parsed {len(meta)} images")
 
 
 # ------------------------------------------------------------
-# GRID TYPE 1
+# BUILD GRID COORDINATES
 # ------------------------------------------------------------
 
-def generate_ab_grid(folder, row_axis, col_axis, width, height, thumb_scale=0.5):
+axes = sorted(set(m["axis"] for m in meta))
+weights = sorted(set(m["weight"] for m in meta))
 
-    files = list_images(folder)
+rows = len(axes)
+cols = len(weights)
 
-    coords = []
-    for f in files:
-        meta = parse_filename(f)
-        if meta:
-            coords.append((meta, f))
+print(f"Grid size → {rows} rows × {cols} cols")
 
-    if not coords:
-        print("No valid images found.")
-        return
-
-    row_values = sorted(set(m[row_axis] for m, _ in coords))
-    col_values = sorted(set(m[col_axis] for m, _ in coords))
-
-    rows = len(row_values)
-    cols = len(col_values)
-
-    print(f"Generating A×B grid: rows={row_axis} ({rows}) cols={col_axis} ({cols})")
-
-    thumb_w = int(width * thumb_scale)
-    thumb_h = int(height * thumb_scale)
-
-    canvas = Image.new("RGB", (cols * thumb_w, rows * thumb_h), "white")
-
-    csv_rows = [["" for _ in range(cols)] for _ in range(rows)]
-
-    lookup = {}
-    for meta, fname in coords:
-        key = (meta[row_axis], meta[col_axis])
-        lookup[key] = fname
-
-    for r, rv in enumerate(row_values):
-        for c, cv in enumerate(col_values):
-
-            fname = lookup.get((rv, cv))
-
-            if fname:
-                img = Image.open(os.path.join(folder, fname))
-                img = img.resize((thumb_w, thumb_h))
-                canvas.paste(img, (c * thumb_w, r * thumb_h))
-                csv_rows[r][c] = fname
-            else:
-                csv_rows[r][c] = "missing"
-
-    filename = f"grid_{row_axis}_x_{col_axis}"
-    canvas.save(os.path.join(folder, f"{filename}.png"))
-    canvas.save(os.path.join(folder, f"{filename}.pdf"), "PDF", resolution=300.0)
-
-    with open(os.path.join(folder, f"{filename}.csv"), "w", newline="") as f:
-        writer = csv.writer(f)
-        writer.writerows(csv_rows)
-
-    print("✅ A×B grid saved")
+lookup = {
+    (m["axis"], m["weight"]): m["file"]
+    for m in meta
+}
 
 
 # ------------------------------------------------------------
-# GRID TYPE 2
+# CREATE CANVAS
 # ------------------------------------------------------------
 
-def generate_linear_grid(folder, axis, cols, width, height, thumb_scale=0.5):
+thumb_w = int(WIDTH * THUMB_SCALE)
+thumb_h = int(HEIGHT * THUMB_SCALE)
 
-    files = list_images(folder)
+canvas = Image.new("RGB", (cols * thumb_w, rows * thumb_h), "white")
 
-    coords = []
-    for f in files:
-        meta = parse_filename(f)
-        if meta:
-            coords.append((meta, f))
 
-    if not coords:
-        print("No valid images found.")
-        return
+# ------------------------------------------------------------
+# RENDER GRID
+# ------------------------------------------------------------
 
-    coords.sort(key=lambda x: x[0][axis])
+missing = 0
 
-    total = len(coords)
-    rows = ceil(total / cols)
+for r, axis in enumerate(axes):
+    for c, weight in enumerate(weights):
 
-    print(f"Generating linear grid sorted by {axis}: {cols} cols × {rows} rows")
+        fname = lookup.get((axis, weight))
 
-    thumb_w = int(width * thumb_scale)
-    thumb_h = int(height * thumb_scale)
+        if fname:
+            img = Image.open(os.path.join(FOLDER, fname))
+            img = img.resize((thumb_w, thumb_h))
+            canvas.paste(img, (c * thumb_w, r * thumb_h))
+        else:
+            missing += 1
 
-    canvas = Image.new("RGB", (cols * thumb_w, rows * thumb_h), "white")
+print(f"Missing cells: {missing}")
 
-    csv_rows = [["" for _ in range(cols)] for _ in range(rows)]
 
-    for idx, (meta, fname) in enumerate(coords):
+# ------------------------------------------------------------
+# SAVE GRID
+# ------------------------------------------------------------
 
-        r = idx // cols
-        c = idx % cols
+out_png = os.path.join(FOLDER, "grid_token_weight.png")
+out_pdf = os.path.join(FOLDER, "grid_token_weight.pdf")
 
-        img = Image.open(os.path.join(folder, fname))
-        img = img.resize((thumb_w, thumb_h))
-        canvas.paste(img, (c * thumb_w, r * thumb_h))
+canvas.save(out_png)
+canvas.save(out_pdf, "PDF", resolution=300)
 
-        csv_rows[r][c] = fname
+print("✅ Grid saved:")
+print(out_png)
+print(out_pdf)
 
-    filename = f"grid_linear_{axis}"
-    canvas.save(os.path.join(folder, f"{filename}.png"))
-    canvas.save(os.path.join(folder, f"{filename}.pdf"), "PDF", resolution=300.0)
 
-    with open(os.path.join(folder, f"{filename}.csv"), "w", newline="") as f:
-        writer = csv.writer(f)
-        writer.writerows(csv_rows)
+# ------------------------------------------------------------
+# SAVE CSV METADATA
+# ------------------------------------------------------------
 
-    print("✅ Linear grid saved")
-    
+csv_path = os.path.join(FOLDER, "grid_token_weight.csv")
+
+with open(csv_path, "w", newline="") as f:
+    writer = csv.writer(f)
+    writer.writerow(["axis", "weight", "filename"])
+
+    for m in sorted(meta, key=lambda x: (x["axis"], x["weight"])):
+        writer.writerow([m["axis"], m["weight"], m["file"]])
+
+print("✅ CSV saved:")
+print(csv_path)
