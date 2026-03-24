@@ -25,7 +25,7 @@ def parse_filename(fname):
             "object": int(parts[3]),
             "style": int(parts[4]),
             "manipulation_type": int(parts[5]),
-            "manipulation": float(parts[6]),
+            "manipulation_value": float(parts[6]),
             "steps": int(parts[7]),
             "cfg": float(parts[8]),
         }
@@ -189,7 +189,7 @@ def write_run_report(
     seeds, intros, beauties, objects, styles,
     total,
     negative_prompt,
-    manipulation_type, manipulation,
+    manipulation_types, manipulation,
     steps, cfg,
     width, height
 ):
@@ -215,7 +215,7 @@ def write_run_report(
             "beauty": [i for i,_ in beauties],
             "object": [i for i,_ in objects],
             "style": [i for i,_ in styles],
-            "manipulation_type": [i for i,_ in manipulation_type],
+            "manipulation_type": [i for i,_ in manipulation_types],
             "manipulation": [manipulation],
             "steps": steps,
             "cfg": cfg,
@@ -230,7 +230,7 @@ def write_run_report(
             
             f.write(f"{row_axis} \\ {col_axis}\n")
             
-            f.write("             " + " ".join(f"{c:>6}" for c in col_vals) + "\n")
+            f.write("       " + " ".join(f"{c:>6}" for c in col_vals) + "\n")
 
             for rv in row_vals:
                 line = f"{rv:>4} | "
@@ -286,10 +286,12 @@ def write_run_report(
         if manipulation == [0]:
             f.write("manipulation: NONE\n\n")
         else:
-            write_component("MANIPULATION TYPE", manipulation_type)
-            f.write("MANIPULATION FACTOR\n")
-            for m in manipulation:
-                f.write(f"  {m}\n")
+            f.write("MANIPULATION TYPE\n")
+            for idx, text in manipulation_types:
+                f.write(f"  {idx}: {text}\n")
+                f.write("  MANIPULATION FACTOR\n")
+                for m in manipulation:
+                    f.write(f"    {m}\n")
             f.write("\n")
 
         # ---------- SAMPLING ----------

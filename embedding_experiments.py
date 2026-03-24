@@ -80,23 +80,24 @@ def scale_pooled(pooled_embeds, scale):
 # --------------------------------------------------
 
 def batch_generate_embeddings(
+    manipulation_types,
+    manipulation_values,
 
     output_dir,
     pipe=None,
 
-    seeds=[0],
+    step_values=[30], cfg_values=[8],
+
+    seeds=[510891975915924],
 
     intros=[(1,"a portrait of a")],
-    beauties=[(1,"beautiful")],
+    beauties=[(3,"beautiful")],
     objects=[(1,"person")],
     styles=[(1,"professional photography")],
 
-    manipulation_type=0,
-    manipulation_values=[0.0],
+    total=0,
 
-    negative_prompt="",
-    steps=30,
-    cfg=7,
+    negative_prompt="watermark, text, picture frame, face card, multiple faces",
     w=512,
     h=744
 ):
@@ -107,59 +108,65 @@ def batch_generate_embeddings(
     os.makedirs(output_dir, exist_ok=True)
 
     count = 0
-    total = len(seeds)*len(intros)*len(beauties)*len(objects)*len(styles)*len(manipulation_values)
-
     for seed in seeds:
-        generator = torch.Generator("cuda").manual_seed(seed)
+        #generator = torch.Generator("cuda").manual_seed(seed)
         for i_i, intro in intros:
             for i_b, beauty in beauties:
                 for i_o, obj in objects:
                     for i_s, style in styles:
-
+                        
                         prompt = f"{intro} {beauty} {obj}, {style}"
-
                         base = encode_prompt(pipe, prompt, negative_prompt)
 
-                        for m in manipulation_values:
+                        for steps in step_values:
+                            for cfg in cfg_values:
+                                 for i_m, manipulation in manipulation_types:
+                                    for m in manipulation_values:
 
-                            count += 1
-                            print(f"[{count}/{total}] seed={seed} manip={m}")
+                                        count += 1
+                                        print(f"[{count}/{total}] {prompt}, seed={seed}, steps={steps}, cfg={cfg}\n")
+                                        print(f"manipulation: {manipulation} {m}")
 
-                            (
-                                prompt_embeds,
-                                negative_embeds,
-                                pooled,
-                                negative_pooled,
-                            ) = base
+                                        generator = torch.Generator("cuda").manual_seed(seed)
 
-                            # clone for safety
-                            prompt_embeds = prompt_embeds.clone()
-                            pooled = pooled.clone()
+                                        (
+                                            prompt_embeds,
+                                            negative_embeds,
+                                            pooled,
+                                            negative_pooled,
+                                        ) = base
 
-                            # -------- apply manipulation --------
+                                        # clone for safety
+                                        prompt_embeds = prompt_embeds.clone()
+                                        pooled = pooled.clone()
 
-                            if manipulation_type == 1:
-                                prompt_embeds = scale_embedding(prompt_embeds, m)
+                                        # -------- apply manipulation --------
 
-                            elif manipulation_type == 2:
-                                pooled = scale_pooled(pooled, m)
+                                        if i_m == 1:
+                                            prompt_embeds = scale_embedding(prompt_embeds, m)
 
-                            # (token weighting + interpolation later)
+                                        elif i_m == 2:
+                                            pooled = scale_pooled(pooled, m)
 
-                            # -------- diffusion --------
+                                        # (token weighting + interpolation later)
 
-                            image = pipe(
-                                prompt_embeds=prompt_embeds,
-                                negative_prompt_embeds=negative_embeds,
-                                pooled_prompt_embeds=pooled,
-                                negative_pooled_prompt_embeds=negative_pooled,
-                                num_inference_steps=steps,
-                                guidance_scale=cfg,
-                                width=w,
-                                height=h,
-                                generator=generator,
-                            ).images[0]
+                                        # -------- diffusion --------
 
-                            filename = f"{seed}_{i_i}_{i_b}_{i_o}_{i_s}_{manipulation_type}_{m}_{steps}_{cfg}.png"
+                                        image = pipe(
+                                            prompt_embeds=prompt_embeds,
+                                            negative_prompt_embeds=negative_embeds,
+                                            pooled_prompt_embeds=pooled,
+                                            negative_pooled_prompt_embeds=negative_pooled,
+                                            num_inference_steps=steps,
+                                            guidance_scale=cfg,
+                                            width=w,
+                                            height=h,
+                                            generator=generator,
+                                        ).images[0]
 
-                            image.save(os.path.join(output_dir, filename))
+                                        filename = f"{seed}_{i_i}_{i_b}_{i_o}_{i_s}_{i_m}_{m}_{steps}_{cfg}.png"
+
+                                        image.save(os.path.join(output_dir, filename))
+
+if __name__ == "__main__":
+    print("Run this file through run_2_embedding.py")

@@ -57,7 +57,7 @@ def batch_generate(
 
     count = 0
     for seed in seeds:
-        generator = torch.Generator("cuda").manual_seed(seed)
+        #generator = torch.Generator("cuda").manual_seed(seed)
         for i_i, intro in intros:
             for i_b, beauty in beauties:
                 for i_o, obj in objects:
@@ -69,6 +69,8 @@ def batch_generate(
                                 prompt = f"{intro} {beauty} {obj}, {style}"
                                 print(f"[{count}/{amount}] {prompt}, seed: {seed}, steps: {steps}, cfg: {cfg}")
 
+                                generator = torch.Generator("cuda").manual_seed(seed)
+                                
                                 image = pipe(
                                     prompt=prompt,
                                     negative_prompt=negative_prompt,
@@ -76,8 +78,8 @@ def batch_generate(
                                     guidance_scale=cfg,
                                     width=w,
                                     height=h,
-                                    original_size=(512, 744),
-                                    target_size=(512, 744),
+                                    original_size=(w, h),
+                                    target_size=(w, h),
                                     generator=generator,
                                 ).images[0]
 

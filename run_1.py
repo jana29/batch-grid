@@ -13,6 +13,9 @@ import shutil
 from datetime import datetime
 from pathlib import Path
 
+from generate_images import load_pipeline, batch_generate
+from create_grid import *
+
 # --- image batch settings ---
 ts = datetime.now().strftime("%Y%m%d_%H%M%S")
 OUTPUT_DIR = f"./output/{ts}_run_1"
@@ -80,7 +83,7 @@ def select_seeds(seeds, selector):
 #                               MAIN FUNCTION
 # =======================================================================
 def run(
-    rows, cols,     # grid a x b
+    rows, cols,     # grid a x b (focus variables)
 
     seed_lines, seed_selector,
 
@@ -176,21 +179,16 @@ def run(
 if __name__ == "__main__":
 
     seeds_all = load_seeds(SEEDS_PATH)
-
     intro_lines_all = load_lines(INTRO_PATH)
     beauty_lines_all = load_lines(BEAUTY_PATH)
     object_lines_all = load_lines(OBJECT_PATH)
     style_lines_all = load_lines(STYLE_PATH)
-
     print("Promptfiles and Seeds ready")
 
-    from generate_images import load_pipeline
     pipeline = load_pipeline()
     print("Pipeline ready")
 
-    from generate_images import batch_generate
-    from create_grid import *
-
+    
     focus = [
         "seed", #0
         "intro", #1
@@ -198,7 +196,7 @@ if __name__ == "__main__":
         "object", #3
         "style", #4
         "manipulation_type", #5 (we don't do that here)
-        "manipulation", #6 (we don't do that here)
+        "manipulation_scale", #6 (we don't do that here)
         "steps", #7 
         "cfg" #8
     ]
