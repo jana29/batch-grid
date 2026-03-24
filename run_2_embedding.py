@@ -407,13 +407,13 @@ def run_embedding_deepdive (
     for s_i in seed_index:
         for m_i in manipulation_indices:
             count+=1
-            print("#----------------------------------------------------------------------")
+            print(f"\n----------------------------------------------------------------------")
             print(f"RUN {count}/{total}: seed #{s_i}, manipulation type #{m_i}")
             run_embedding_scale(
                 manipulation_type_lines_all, [m_i],
                 manipulation_scale_values,
                 pipe,
-                "100_scales_m#{m_i}_seed#{s_i}",
+                f"100_scales_m#{m_i}_seed#{s_i}",
                 rows=None, cols="manipulation_value",     # linear grid
                 num_cols=10,
 
