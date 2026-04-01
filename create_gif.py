@@ -37,12 +37,12 @@ def menu_select(folders, current_path):
 
 
 def collect_images(folder):
-    extensions = (".png", ".jpg", ".jpeg", ".bmp", ".tiff", ".webp")
+    extensions = (".png")
 
     images = [
         p for p in folder.iterdir()
         if p.suffix.lower() in extensions
-        and p.name != "grid.png"
+        and not p.name.startswith("grid")
     ]
 
     images.sort(key=natural_key)
