@@ -6,7 +6,6 @@ BASE_DIR = Path("./output")
 FPS = 20
 FRAME_DURATION = 1 / FPS
 
-# numeric extraction for natural sorting
 number_pattern = re.compile(r"\d+(?:\.\d+)?")
 
 def natural_key(path):
@@ -14,25 +13,25 @@ def natural_key(path):
     return [float(n) if "." in n else int(n) for n in nums]
 
 
-def select_folder():
-    folders = sorted([p for p in BASE_DIR.iterdir() if p.is_dir()])
+def menu_select(folders, current_path):
+    print(f"\nCurrent folder: {current_path}\n")
 
-    if not folders:
-        print("No subfolders found in ./output")
-        exit()
+    for i, f in enumerate(folders, 1):
+        print(f"{i}: {f.name}")
 
-    print("\nAvailable folders:\n")
-
-    for i, folder in enumerate(folders, 1):
-        print(f"{i}: {folder.name}")
+    print("0: Go up")
 
     while True:
-        choice = input("\nSelect folder number: ")
+        choice = input("\nSelect folder: ")
 
         if choice.isdigit():
-            idx = int(choice) - 1
-            if 0 <= idx < len(folders):
-                return folders[idx]
+            idx = int(choice)
+
+            if idx == 0:
+                return None
+
+            if 1 <= idx <= len(folders):
+                return folders[idx - 1]
 
         print("Invalid selection")
 
@@ -47,7 +46,6 @@ def collect_images(folder):
     ]
 
     images.sort(key=natural_key)
-
     return images
 
 
@@ -58,8 +56,7 @@ def create_outputs(images, folder):
 
     print(f"\nProcessing {len(images)} images...")
 
-    # load frames
-    frames = [imageio.imread(img) for img in images]
+    frames = [imageio.imread(p) for p in images]
 
     print("Writing GIF...")
     imageio.mimsave(gif_path, frames, duration=FRAME_DURATION)
@@ -74,18 +71,36 @@ def create_outputs(images, folder):
     print("MP4:", mp4_path)
 
 
-def main():
-    folder = select_folder()
-    print(f"\nSelected: {folder.name}")
+def navigate(start_dir):
 
-    images = collect_images(folder)
+    current = start_dir
 
-    if not images:
-        print("No images found")
-        return
+    while True:
 
-    create_outputs(images, folder)
+        subfolders = sorted([p for p in current.iterdir() if p.is_dir()])
+        images = collect_images(current)
+
+        if images:
+            print(f"\nImages detected in: {current}")
+            confirm = input("Generate GIF/MP4 here? (y/n): ").lower()
+
+            if confirm == "y":
+                create_outputs(images, current)
+                return
+
+        if not subfolders:
+            print("No subfolders here.")
+            return
+
+        selection = menu_select(subfolders, current)
+
+        if selection is None:
+            current = current.parent
+            if current == start_dir.parent:
+                return
+        else:
+            current = selection
 
 
 if __name__ == "__main__":
-    main()
+    navigate(BASE_DIR)
